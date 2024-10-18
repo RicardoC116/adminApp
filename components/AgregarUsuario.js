@@ -43,6 +43,7 @@ const AgregarUsuarioScreen = () => {
         value={phone_number}
         onChangeText={setPhoneNumber}
         placeholder="Número de identificación"
+        keyboardType="numeric"
       />
       <TextInput
         style={styles.input}

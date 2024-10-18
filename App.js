@@ -7,7 +7,9 @@ import LoginScreen from "./screens/loginScreen";
 import PrincipalScreen from "./screens/principalScreen";
 import ControlPanelScreen from "./screens/controlPanelScreen";
 import { PanelIcon, PrincipalIcon } from "./components/iconos";
-import AgregarUsuarioScreen from "./components/AgregarUsuario"; // Cambié el nombre para corregir el typo
+import AgregarUsuarioScreen from "./components/AgregarUsuario";
+import DetallesUsuarioScreen from "./screens/DetallesUsuarioScreen";
+import AgregarDeudor from "./components/AgregarCliente";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -20,6 +22,15 @@ const PrincipalStack = () => {
         component={PrincipalScreen}
         options={{
           headerTitle: () => <Text style={styles.headerTitle}>Usuarios</Text>,
+        }}
+      />
+      <Stack.Screen
+        name="DetallesUsuarios"
+        component={DetallesUsuarioScreen}
+        options={{
+          headerTitle: () => (
+            <Text style={styles.headerTitle}>Detalles del Usuario</Text>
+          ),
         }}
       />
     </Stack.Navigator>
@@ -44,6 +55,15 @@ const ControlPanelStack = () => {
         options={{
           headerTitle: () => (
             <Text style={styles.headerTitle}>Agregar Usuario</Text>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="AgregarCliente"
+        component={AgregarDeudor}
+        options={{
+          headerTitle: () => (
+            <Text style={styles.headerTitle}>Agregar cliente</Text>
           ),
         }}
       />

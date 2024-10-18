@@ -1,12 +1,71 @@
-import React from "react";
-import { View, Text } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+} from "react-native";
+import api from "../api/axios";
+import { useNavigation } from "@react-navigation/native";
 
-const PrincipalScreen = () => {
+const MainScreen = () => {
+  const [usuarios, setUsuarios] = useState([]);
+  const navigation = useNavigation();
+
+  // Fuincion para el back
+  useEffect(() => {
+    const fetchUsuarios = async () => {
+      try {
+        const response = await api.get("/cobradores");
+        setUsuarios(response.data);
+      } catch (error) {
+        console.error("Error al obtener usuarios:", error);
+      }
+    };
+
+    fetchUsuarios();
+  }, []);
+
+  const handleUserClick = (usuario) => {
+    navigation.navigate("DetallesUsuarios", { usuario });
+  };
+
+  // Renderizar la lista de usuarios
+  const renderUsuario = ({ item }) => (
+    <TouchableOpacity
+      style={styles.userItem}
+      onPress={() => handleUserClick(item)}
+    >
+      <Text style={styles.userText}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
   return (
-    <View>
-      <Text>Bienvenido a la pantalla principal</Text>
+    <View style={styles.container}>
+      <FlatList
+        data={usuarios}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderUsuario}
+      />
     </View>
   );
 };
 
-export default PrincipalScreen;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: "#fff",
+  },
+  userItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+  },
+  userText: {
+    fontSize: 16,
+  },
+});
+
+export default MainScreen;

@@ -17,3 +17,7 @@ export const PanelIcon = ({ focused, color, size }) => {
 export const ClienteIcono = ({ focused, color, size }) => {
   return <Icon name="user-plus" color={color} size={size} />;
 };
+
+export const DeudoresIcono = ({ focused, color, size }) => {
+  return <Icon name="credit-card" color={color} size={size} />;
+};
