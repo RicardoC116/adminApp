@@ -52,7 +52,12 @@ const AgregarUsuarioScreen = () => {
         placeholder="Contraseña"
         secureTextEntry
       />
-      <Button title="Agregar usuario" onPress={handleSubmit} />
+
+      <Button
+        title="Agregar usuario"
+        onPress={handleSubmit}
+        color={"#5d1793"}
+      />
     </View>
   );
 };

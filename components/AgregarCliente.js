@@ -158,7 +158,7 @@ const AgregarDeudor = () => {
       <Button
         title="Agregar al cliente"
         onPress={handleAddClient}
-        color={"#AD49E1"}
+        color={"#5d1793"}
       />
     </View>
   );
