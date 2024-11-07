@@ -1,3 +1,5 @@
+// AgregarCliebte.js
+
 import React, { useState, useEffect } from "react";
 import { View, TextInput, Button, StyleSheet, Text } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -152,7 +154,7 @@ const AgregarDeudor = () => {
         labelStyle={styles.dropdownLabel}
         listItemLabelStyle={styles.dropdownItemLabel}
         arrowIconStyle={styles.dropdownArrow}
-        placeholder="Selecciona a un cobrador"
+        placeholder="Selecciona a un agentes"
       />
 
       <Button

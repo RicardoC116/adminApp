@@ -18,9 +18,14 @@ const MainScreen = () => {
     const fetchUsuarios = async () => {
       try {
         const response = await api.get("/cobradores");
-        setUsuarios(response.data);
+        if (response.data) {
+          setUsuarios(response.data);
+        } else {
+          setUsuarios([]); // Manejar si la respuesta no tiene datos
+        }
       } catch (error) {
         console.error("Error al obtener usuarios:", error);
+        Alert.alert("Error", "No se pudo cargar la lista de usuarios.");
       }
     };
 
