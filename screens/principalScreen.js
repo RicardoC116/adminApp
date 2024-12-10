@@ -1,3 +1,4 @@
+// principalScreen (aqui estan los cobradores asiciados a la agencia)
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -13,7 +14,6 @@ const MainScreen = () => {
   const [usuarios, setUsuarios] = useState([]);
   const navigation = useNavigation();
 
-  // Fuincion para el back
   useEffect(() => {
     const fetchUsuarios = async () => {
       try {
@@ -21,7 +21,7 @@ const MainScreen = () => {
         if (response.data) {
           setUsuarios(response.data);
         } else {
-          setUsuarios([]); // Manejar si la respuesta no tiene datos
+          setUsuarios([]);
         }
       } catch (error) {
         console.error("Error al obtener usuarios:", error);
@@ -31,7 +31,7 @@ const MainScreen = () => {
 
     fetchUsuarios();
   }, []);
-
+  
   const handleUserClick = (usuario) => {
     navigation.navigate("DetallesUsuarios", { usuario });
   };

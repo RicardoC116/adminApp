@@ -1,97 +1,208 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+// DetallesUsuariosScreen.js
+import React, { useEffect, useState, useCallback } from "react";
+import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
+import api from "../api/axios";
+import Swal from "sweetalert2";
+import CorteDiario from "../components/CorteDiario";
+import CorteSemanal from "../components/CorteSemanal";
 
-const CorteCajaScreen = ({ navigation }) => {
-  return (
-    <View style={styles.container}>
-      {/* Sección de Cobranza */}
-      <TouchableOpacity
-        style={styles.section}
-        onPress={() => navigation.navigate("CobranzaDetails")}
-      >
-        <Text style={styles.title}>Cobranza</Text>
-        <Text style={styles.info}>Clientes: 15</Text>
-        <Text style={styles.info}>Monto: $1500</Text>
-      </TouchableOpacity>
+const DetallesUsuariosScreen = ({ route }) => {
+  const { usuario } = route.params;
+  const [ultimoCorteDiario, setUltimoCorteDiario] = useState(null);
+  const [ultimoCorteSemanal, setUltimoCorteSemanal] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-      {/* Sección de Liquidaciones */}
-      <TouchableOpacity
-        style={styles.section}
-        onPress={() => navigation.navigate("LiquidacionesDetails")}
-      >
-        <Text style={styles.title}>Liquidaciones</Text>
-        <Text style={styles.info}>Número de Liquidaciones: 3</Text>
-      </TouchableOpacity>
+  const cargarDatos = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [corteDiarioResponse, corteSemanalResponse] = await Promise.all([
+        api.get(`/cortes/diario/${usuario.id}`),
+        api.get(`/cortes/semanal/${usuario.id}`),
+      ]);
+      console.log(usuario.id);
 
-      {/* Sección de No Pagos */}
-      <TouchableOpacity
-        style={styles.section}
-        onPress={() => navigation.navigate("NoPagosDetails")}
-      >
-        <Text style={styles.title}>No Pagos</Text>
-        <Text style={styles.info}>Clientes: 2</Text>
-      </TouchableOpacity>
+      setUltimoCorteDiario(
+        corteDiarioResponse.data?.length
+          ? corteDiarioResponse.data[corteDiarioResponse.data.length - 1]
+          : null
+      );
+      setUltimoCorteSemanal(
+        corteSemanalResponse.data?.length
+          ? corteSemanalResponse.data[corteSemanalResponse.data.length - 1]
+          : null
+      );
+    } catch (error) {
+      console.error("Error al cargar los detalles:", error);
+      Swal.fire({
+        title: "Error",
+        text: "No se pudieron cargar los detalles del corte.",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [usuario.id]);
 
-      {/* Sección de Créditos */}
-      <TouchableOpacity
-        style={styles.section}
-        onPress={() => navigation.navigate("CreditosDetails")}
-      >
-        <Text style={styles.title}>Créditos</Text>
-        <Text style={styles.info}>Número: 4</Text>
-        <Text style={styles.info}>Monto: $5000</Text>
-      </TouchableOpacity>
+  useEffect(() => {
+    cargarDatos();
+  }, [cargarDatos]);
 
-      {/* Sección de Primeros Pagos */}
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Cargando detalles del cobrador...</Text>
+      </View>
+    );
+  }
+
+  const renderData = (title, data) => {
+    return (
       <View style={styles.section}>
-        <Text style={styles.title}>Primeros Pagos</Text>
-        <Text style={styles.info}>Monto: $1200</Text>
+        <Text style={styles.title}>{title}</Text>
+        {data ? (
+          <View style={styles.dataContainer}>
+            {Object.entries(data).map(([key, value], index) => (
+              <View key={index} style={styles.card}>
+                <Text style={styles.cardTitle}>{key.replace(/_/g, " ")}</Text>
+                <Text style={styles.cardValue}>{value}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.noCorteText}>
+            Aún no hay registros disponibles.
+          </Text>
+        )}
+      </View>
+    );
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      {renderData(
+        "Detalles del Corte Diario",
+        ultimoCorteDiario
+          ? {
+              "Cobranza Total": `$${ultimoCorteDiario.cobranza_total ?? 0}`,
+              "Deudores Cobrados": ultimoCorteDiario.deudores_cobrados ?? 0,
+              "Liquidaciones Totales": `$${
+                ultimoCorteDiario.liquidaciones_total ?? 0
+              }`,
+              "Créditos Totales": ultimoCorteDiario.creditos_total ?? 0,
+              "No Pagos": ultimoCorteDiario.no_pagos_total ?? 0,
+              "Primeros Pagos": `$${
+                ultimoCorteDiario.primeros_pagos_total ?? 0
+              }`,
+            }
+          : null
+      )}
+
+      <View style={styles.buttonsContainer}>
+        <CorteDiario
+          usuarioId={usuario.id}
+          ultimoCorte={ultimoCorteDiario}
+          onCorteRealizado={cargarDatos}
+        />
+        <CorteSemanal usuarioId={usuario.id} onCorteRealizado={cargarDatos} />
       </View>
 
-      {/* Botones de acción */}
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Hacer Corte Diario</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.button, styles.disabledButton]} disabled>
-        <Text style={styles.buttonText}>Hacer Corte Semanal</Text>
-      </TouchableOpacity>
-    </View>
+      {renderData(
+        "Detalles del Corte Semanal",
+        ultimoCorteSemanal
+          ? {
+              "Corte Inicio": ultimoCorteSemanal.fecha_inicio
+                ? new Date(ultimoCorteSemanal.fecha_inicio).toLocaleDateString()
+                : "Sin fecha",
+              "Corte Fin": ultimoCorteSemanal.fecha_fin
+                ? new Date(ultimoCorteSemanal.fecha_fin).toLocaleDateString()
+                : "Sin fecha",
+              "Cobranza Total": `$${ultimoCorteSemanal.cobranza_total ?? 0}`,
+              "Liquidaciones Totales": `$${
+                ultimoCorteSemanal.liquidaciones_total ?? 0
+              }`,
+              "Créditos Totales": `$${
+                ultimoCorteSemanal.creditos_total_monto ?? 0
+              }`,
+              "Primeros Pagos": `$${
+                ultimoCorteSemanal.primeros_pagos_total ?? 0
+              }`,
+              "Nuevos Créditos": ultimoCorteSemanal.nuevos_deudores ?? 0,
+              "Comisión de Cobros": `$${
+                ultimoCorteSemanal.comision_cobro ?? 0
+              }`,
+              "Comisión de Ventas": `$${
+                ultimoCorteSemanal.comision_ventas ?? 0
+              }`,
+              Gastos: `$${ultimoCorteSemanal.gastos ?? 0}`,
+              "Total de Ingresos": `$${ultimoCorteSemanal.total_ingreso ?? 0}`,
+              "Total de Gastos": `$${ultimoCorteSemanal.total_gasto ?? 0}`,
+              "Saldo Final": `$${ultimoCorteSemanal.saldo_final ?? 0}`,
+            }
+          : null
+      )}
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#fff",
-
+    padding: 20,
   },
   section: {
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 10,
+    marginBottom: 20,
   },
   title: {
+    fontSize: 20,
     fontWeight: "bold",
-    fontSize: 18,
+    marginBottom: 10,
+    color: "#333",
   },
-  info: {
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: "#007bff",
+  dataContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    rowGap: 25,
+    columnGap: 10,
+    // gap: 10,
+    backgroundColor: "#fff",
     padding: 15,
-    marginTop: 20,
     borderRadius: 10,
-    alignItems: "center",
+    elevation: 2,
   },
-  disabledButton: {
-    backgroundColor: "#d3d3d3",
+  card: {
+    backgroundColor: "#e8c4ff66",
+    borderRadius: 8,
+    padding: 10,
+    width: "48%",
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  buttonText: {
-    color: "#fff",
+  cardTitle: {
+    fontSize: Platform.OS === "web" ? 18 : 16,
+    textAlign: "center",
     fontWeight: "bold",
+    color: "#000025",
+    marginBottom: 5,
+  },
+  cardValue: {
+    fontSize: Platform.OS === "web" ? 16 : 14,
+    textAlign: "center",
+    color: "#000025",
+  },
+  noCorteText: {
+    fontSize: 16,
+    color: "#999",
+    fontStyle: "italic",
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
   },
 });
 
-export default CorteCajaScreen;
+export default DetallesUsuariosScreen;

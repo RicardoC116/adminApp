@@ -70,7 +70,7 @@ const AgregarDeudor = () => {
       setTotalToPay("");
       setFirstPayment("");
       setBalance("");
-      setTipo("diario");
+      setTipo("");
       setCobrador(null);
     } else {
       alert("Por favor, completa todos los campos.");
@@ -90,7 +90,7 @@ const AgregarDeudor = () => {
         value={contract_number}
         onChangeText={setContract_number}
         style={styles.input}
-        keyboardType="numeric "
+        keyboardType="numeric"
       />
       <TextInput
         placeholder="Monto"
