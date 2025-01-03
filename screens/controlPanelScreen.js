@@ -2,7 +2,11 @@
 
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { ClienteIcono, DeudoresIcono } from "../components/iconos";
+import {
+  ClienteIcono,
+  DeudoresIcono,
+  VerClientesIcono,
+} from "../components/iconos";
 
 const ControlPanelScreen = ({ navigation }) => {
   return (
@@ -19,8 +23,16 @@ const ControlPanelScreen = ({ navigation }) => {
         style={styles.button}
         onPress={() => navigation.navigate("AgregarCliente")}
       >
-        <DeudoresIcono size={25} color="#6c1295"/>
+        <DeudoresIcono size={25} color="#6c1295" />
         <Text style={styles.buttonText}>Agregar Clientes</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("VerClientes")}
+      >
+        <VerClientesIcono size={25} color="#6c1295" />
+        <Text style={styles.buttonText}>Ver clientes</Text>
       </TouchableOpacity>
 
       {/* Más botones de navegación si es necesario */}

@@ -1,5 +1,4 @@
-// principalScreen (aqui estan los cobradores asiciados a la agencia)
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,30 +7,57 @@ import {
   FlatList,
 } from "react-native";
 import api from "../api/axios";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import InputWithIcon from "../components/inputWithIcon";
 
 const MainScreen = () => {
   const [usuarios, setUsuarios] = useState([]);
+  const [filteredUsuarios, setFilteredUsuarios] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const [focus, setFocus] = useState(false);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const fetchUsuarios = async () => {
-      try {
-        const response = await api.get("/cobradores");
-        if (response.data) {
-          setUsuarios(response.data);
-        } else {
-          setUsuarios([]);
-        }
-      } catch (error) {
-        console.error("Error al obtener usuarios:", error);
-        Alert.alert("Error", "No se pudo cargar la lista de usuarios.");
+  // Función para cargar los usuarios
+  const fetchUsuarios = async () => {
+    try {
+      const response = await api.get("/cobradores");
+      if (response.data) {
+        setUsuarios(response.data);
+        setFilteredUsuarios(response.data);
+      } else {
+        setUsuarios([]);
+        setFilteredUsuarios([]);
       }
-    };
+    } catch (error) {
+      console.error("Error al obtener usuarios:", error);
+      alert("No se pudo cargar la lista de usuarios.");
+    }
+  };
 
-    fetchUsuarios();
-  }, []);
-  
+  // Recargar datos al volver a la pantalla principal
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchUsuarios();
+    }, [])
+  );
+
+  // Manejar la búsqueda
+  const handleSearch = (text) => {
+    setSearchText(text);
+    if (text) {
+      const filtered = usuarios.filter(
+        (usuario) =>
+          usuario.name.toLowerCase().includes(text.toLowerCase()) ||
+          String(usuario.phone_number)
+            .toLowerCase()
+            .includes(text.toLowerCase())
+      );
+      setFilteredUsuarios(filtered);
+    } else {
+      setFilteredUsuarios(usuarios);
+    }
+  };
+
   const handleUserClick = (usuario) => {
     navigation.navigate("DetallesUsuarios", { usuario });
   };
@@ -42,17 +68,30 @@ const MainScreen = () => {
       style={styles.userItem}
       onPress={() => handleUserClick(item)}
     >
-      <Text style={styles.userText}>{item.name}</Text>
+      <Text className="text-red-600 text-center" style={styles.userText}>
+        {item.name}
+      </Text>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
+      <InputWithIcon
+        value={searchText}
+        onChangeText={handleSearch}
+        placeholder="Buscar usuario..."
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
+        focus={focus}
+      />
+
+      {/* Lista de usuarios */}
       <FlatList
-        data={usuarios}
+        data={filteredUsuarios}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderUsuario}
       />
+
     </View>
   );
 };
