@@ -43,24 +43,23 @@ const HistorialCortesScreen = ({ route }) => {
     navigation.navigate("DetallesCorte", { corte, tipo });
   };
 
-  // Renderizar un elemento de la lista
-  const renderCorteDiarioItem = (corte, tipo) => (
+  // Modifica las funciones de renderizado para pasar el tipo correcto
+  const renderCorteDiarioItem = (corte) => (
     <TouchableOpacity
       key={corte.id}
       style={styles.corteItem}
-      onPress={() => handleCortePress(corte, tipo)}
+      onPress={() => handleCortePress(corte, "diario")}
     >
       <Text style={styles.corteFecha}>Fecha: {corte.fecha}</Text>
       <Text style={styles.corteMonto}>Monto: ${corte.cobranza_total}</Text>
     </TouchableOpacity>
   );
 
-  // Renderizar cortes semanales
-  const renderCorteSemanalesItem = (corte, tipo) => (
+  const renderCorteSemanalesItem = (corte) => (
     <TouchableOpacity
       key={corte.id}
       style={styles.corteItem}
-      onPress={() => handleCortePress(corte, tipo)}
+      onPress={() => handleCortePress(corte, "semanal")}
     >
       <View style={styles.container2}>
         <View>

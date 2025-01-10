@@ -41,11 +41,19 @@ const RenovacionesModal = ({ visible, onClose, clienteId }) => {
                   <Text style={styles.contractText}>
                     Número de contrato: {item.contract_number}
                   </Text>
+
                   <Text style={styles.contractText}>
                     Monto: {formatearMonto(item.amount)}
                   </Text>
                   <Text style={styles.contractText}>
-                    Fecha: {new Date(item.fecha_inicio).toLocaleDateString()}
+                    Primer pago: {formatearMonto(item.first_payment)}
+                  </Text>
+                  <Text style={styles.contractText}>
+                    Fecha de inicio:{" "}
+                    {new Date(item.fecha_inicio).toLocaleDateString()}
+                  </Text>
+                  <Text style={styles.contractText}>
+                    Fecha final: {new Date(item.fecha_fin).toLocaleDateString()}
                   </Text>
                 </View>
               )}

@@ -153,7 +153,7 @@ const EditarCliente = ({ route, navigation }) => {
 
         {/* renovaciones de contrato */}
 
-        <Text style={styles.titleRenovacion}>
+        <Text style={styles.title}>
           Renovaciones de contrato del cliente{" "}
           <Text style={styles.bold}>{nombreDeudor}</Text>
         </Text>
@@ -199,30 +199,42 @@ const EditarCliente = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f9f9f9",
+    padding: 20,
   },
   title: {
-    fontSize: 25,
+    fontSize: 22,
     fontWeight: "bold",
     marginBottom: 15,
-    color: "#333",
-  },
-  titleRenovacion: {
     marginTop: 15,
-    marginBottom: 15,
-    color: "#333",
-    fontSize: 25,
-    fontWeight: "500",
+    color: "#5d1793",
+    textAlign: "center",
   },
-  cambiarAgente: {
-    padding: 25,
+  section: {
+    marginBottom: 30,
+    padding: 15,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 10,
+    color: "#333",
   },
   info: {
-    fontSize: 18,
-    marginBottom: 10,
+    fontSize: 16,
+    marginBottom: 8,
+    color: "#555",
   },
   bold: {
     fontWeight: "bold",
+    color: "#333",
   },
   dropdown: {
     borderWidth: 1,
@@ -237,27 +249,32 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 8,
   },
-  dropdownContainer2: {
-    marginBottom: 20,
+  button: {
+    backgroundColor: "#5d1793",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  textInput: {
+    height: 45,
     borderColor: "#ccc",
-    zIndex: 2,
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    backgroundColor: "#f2f2f2",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  textInput: {
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    fontSize: 16,
-  },
-  renovaciones: {
-    padding: 25,
   },
 });
 

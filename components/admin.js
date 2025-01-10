@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import axios from "../api/axios";
 import { formatearMonto } from "../components/dinero";
 
-const CONTRASENA_LOCAL = "mi_contraseña_secreta"; // Contraseña preestablecida
+const CONTRASENA_LOCAL = "serpiente79"; // Contraseña preestablecida
 
 const AdminActions = ({ cobroId, amount, actualizarDetalles }) => {
   // Verificar contraseña
