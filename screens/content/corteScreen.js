@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
 import api from "../../api/axios";
 import Swal from "sweetalert2";
-import CorteDiario from "../../components/CorteDiario";
-import CorteSemanal from "../../components/CorteSemanal";
+import CorteDiario from "../../components/screens/CorteDiario";
+import CorteSemanal from "../../components/screens/CorteSemanal";
 
 const CortesScreen = ({ route }) => {
   const { usuario } = route.params;

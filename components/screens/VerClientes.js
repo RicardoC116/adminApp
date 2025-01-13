@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import axios from "../api/axios";
+import axios from "../../api/axios";
 import React, { useCallback, useState } from "react";
 import {
   Text,
@@ -8,10 +8,8 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import InputWithIcon from "./inputWithIcon";
-import { ClientesIcono } from "./iconos";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { ScrollView } from "react-native-gesture-handler";
+import InputWithIcon from "../global/inputWithIcon";
+import { ClientesIcono } from "../global/iconos";
 
 const VerClientesScreen = ({ navigation }) => {
   const [clientes, setClientes] = useState([]);
@@ -85,22 +83,20 @@ const VerClientesScreen = ({ navigation }) => {
   }
 
   return (
-
-          <View style={styles.container2}>
-            <InputWithIcon
-              value={searchText}
-              onChangeText={handleSearch}
-              placeholder="Buscar usuario..."
-            />
-            <Text style={styles.text}>Clientes totales: {clientes.length}</Text>
-            <FlatList
-              data={filteredUsuarios}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={renderclientes}
-              contentContainerStyle={styles.listContent}
-            />
-          </View>
-
+    <View style={styles.container2}>
+      <InputWithIcon
+        value={searchText}
+        onChangeText={handleSearch}
+        placeholder="Buscar usuario..."
+      />
+      <Text style={styles.text}>Clientes totales: {clientes.length}</Text>
+      <FlatList
+        data={filteredUsuarios}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderclientes}
+        contentContainerStyle={styles.listContent}
+      />
+    </View>
   );
 };
 

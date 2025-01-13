@@ -7,10 +7,9 @@ import {
   TouchableOpacity,
 } from "react-native";
 import axios from "../../api/axios";
-import { formatearMonto } from "../../components/dinero";
-import Swal from "sweetalert2"; // Importar SweetAlert2
+import { formatearMonto } from "../../components/global/dinero";
 import { useFocusEffect } from "@react-navigation/native";
-import AdminActions from "../../components/admin";
+import AdminActions from "../../components/screens/admin";
 
 const DetallesDeudor = ({ route }) => {
   const { deudor } = route.params;

@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import api from "../api/axios";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import InputWithIcon from "../components/inputWithIcon";
+import InputWithIcon from "../components/global/inputWithIcon";
 
 const MainScreen = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -59,7 +59,10 @@ const MainScreen = () => {
   };
 
   const handleUserClick = (usuario) => {
-    navigation.navigate("DetallesUsuarios", { usuario });
+    navigation.navigate("DetallesUsuarios", {
+      usuario,
+      cargarUsuario: fetchUsuarios,
+    });
   };
 
   // Renderizar la lista de usuarios
@@ -76,6 +79,7 @@ const MainScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Barra de busqueda */}
       <InputWithIcon
         value={searchText}
         onChangeText={handleSearch}
@@ -91,7 +95,6 @@ const MainScreen = () => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderUsuario}
       />
-
     </View>
   );
 };

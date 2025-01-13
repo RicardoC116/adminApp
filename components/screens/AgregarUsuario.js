@@ -1,8 +1,15 @@
 // AgregarUsuarioScreen.js
 
 import React, { useState } from "react";
-import { View, TextInput, Button, Text, StyleSheet, Platform } from "react-native";
-import api from "../api/axios";
+import {
+  View,
+  TextInput,
+  Button,
+  Text,
+  StyleSheet,
+  Platform,
+} from "react-native";
+import api from "../../api/axios";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native-web";
 

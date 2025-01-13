@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
-import axios from "../api/axios";
+import axios from "../../api/axios";
 import { formatearMonto } from "./dinero";
 
 const RenovacionesModal = ({ visible, onClose, clienteId }) => {

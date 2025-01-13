@@ -1,12 +1,12 @@
 // components/CorteSemanal
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
-import api from "../api/axios";
+import api from "../../api/axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { View } from "react-native-web";
-import { ImprimirIcono } from "./iconos";
-import "../styles.css";
+import { ImprimirIcono } from "../global/iconos";
+import "../../styles.css";
 
 const MySwal = withReactContent(Swal);
 

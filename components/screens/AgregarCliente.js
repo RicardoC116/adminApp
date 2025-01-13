@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { View, TextInput, Button, StyleSheet, Text } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
-import api from "../api/axios";
+import api from "../../api/axios";
 
 const AgregarDeudor = () => {
   const [name, setName] = useState("");

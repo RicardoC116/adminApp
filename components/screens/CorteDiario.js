@@ -1,9 +1,9 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
-import api from "../api/axios";
+import api from "../../api/axios";
 import Swal from "sweetalert2";
 import { View } from "react-native-web";
-import { ImprimirIcono } from "./iconos";
+import { ImprimirIcono } from "../global/iconos";
 
 const CorteDiario = ({
   usuarioId,

@@ -11,7 +11,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import api from "../../api/axios";
 import Swal from "sweetalert2";
 import { TouchableOpacity } from "react-native-web";
-import { ImprimirIcono } from "../../components/iconos";
+import { ImprimirIcono } from "../../components/global/iconos";
 
 const CorteAgenteScreen = ({ route }) => {
   const { usuario } = route.params;

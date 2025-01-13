@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Swal from "sweetalert2";
-import axios from "../api/axios";
-import { formatearMonto } from "../components/dinero";
+import axios from "../../api/axios";
+import { formatearMonto } from "../global/dinero";
 
 const CONTRASENA_LOCAL = "serpiente79"; // Contraseña preestablecida
 

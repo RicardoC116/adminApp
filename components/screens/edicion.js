@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
-import api from "../api/axios";
+import api from "../../api/axios";
 import { TextInput } from "react-native-web";
 
 const EditarCliente = ({ route, navigation }) => {

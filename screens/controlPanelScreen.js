@@ -6,7 +6,7 @@ import {
   ClienteIcono,
   DeudoresIcono,
   VerClientesIcono,
-} from "../components/iconos";
+} from "../components/global/iconos";
 
 const ControlPanelScreen = ({ navigation }) => {
   return (

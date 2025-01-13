@@ -8,11 +8,11 @@ import {
 } from "react-native";
 import axios from "../../api/axios";
 
-import { formatearMonto } from "../../components/dinero";
+import { formatearMonto } from "../../components/global/dinero";
 import { useFocusEffect } from "@react-navigation/native";
-import { RenovacionIcono } from "../../components/iconos";
-import AdminActions from "../../components/admin";
-import RenovacionesModal from "../../components/modal";
+import { RenovacionIcono } from "../../components/global/iconos";
+import AdminActions from "../../components/screens/admin";
+import RenovacionesModal from "../../components/global/modal";
 
 const DetallesCliente = ({ route, navigation }) => {
   const { clienteId } = route.params;
