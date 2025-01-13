@@ -12,7 +12,7 @@ import api from "../../api/axios";
 import { Ionicons } from "@expo/vector-icons";
 import Swal from "sweetalert2";
 
-const UserModal = ({ visible, onClose, usuario, cargarUsuario }) => {
+const UserModal = ({ visible, onClose, usuario }) => {
   const [name, setName] = useState(usuario?.name || "");
   const [phoneNumber, setPhoneNumber] = useState(usuario?.phone_number || "");
   const [password, setPassword] = useState("");
@@ -31,7 +31,6 @@ const UserModal = ({ visible, onClose, usuario, cargarUsuario }) => {
 
     try {
       await api.put(`/cobradores/${usuario.id}`, updatedUser);
-      cargarUsuario();
       onClose();
       Swal.fire("Modificado", "Se ha modificado al agente", "success");
     } catch (error) {

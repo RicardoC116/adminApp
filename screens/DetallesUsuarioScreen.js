@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 import api from "../api/axios";
 
 const DetallesUsuariosScreen = ({ route }) => {
-  const { usuario, cargarUsuario } = route.params;
+  const { usuario } = route.params;
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = React.useState(false);
 
@@ -32,7 +32,6 @@ const DetallesUsuariosScreen = ({ route }) => {
       if (result.isConfirmed) {
         try {
           await api.delete(`/cobradores/${usuario.id}`);
-          cargarUsuario(); // Refresca la lista de usuarios
           Swal.fire("¡Eliminado!", "El usuario ha sido eliminado.", "success");
         } catch (error) {
           console.error(
@@ -102,7 +101,6 @@ const DetallesUsuariosScreen = ({ route }) => {
         visible={modalVisible}
         onClose={cerrarModal}
         usuario={usuario}
-        cargarUsuario={cargarUsuario}
       />
     </View>
   );

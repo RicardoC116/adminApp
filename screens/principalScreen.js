@@ -61,7 +61,6 @@ const MainScreen = () => {
   const handleUserClick = (usuario) => {
     navigation.navigate("DetallesUsuarios", {
       usuario,
-      cargarUsuario: fetchUsuarios,
     });
   };
 
