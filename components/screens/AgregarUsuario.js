@@ -5,13 +5,13 @@ import {
   View,
   TextInput,
   Button,
-  Text,
   StyleSheet,
+  TouchableOpacity,
   Platform,
+  Alert,
 } from "react-native";
 import api from "../../api/axios";
 import { Ionicons } from "@expo/vector-icons";
-import { TouchableOpacity } from "react-native-web";
 
 const AgregarUsuarioScreen = () => {
   const [name, setName] = useState("");
@@ -31,16 +31,16 @@ const AgregarUsuarioScreen = () => {
           phone_number,
           password,
         });
-        alert("Usuario agregado.");
+        Alert.alert("Felicidades", "Usuario agregado.");
         setName("");
         setPassword("");
         setPhoneNumber("");
       } catch (error) {
         console.error(error);
-        alert("Hubo un error al agregar el usuario.");
+        Alert.alert("Error", "Hubo un error al agregar el usuario.");
       }
     } else {
-      alert("Por favor, ingresa todos los campos.");
+      Alert.alert("Error", "Por favor, ingresa todos los campos.");
     }
   };
 

@@ -1,13 +1,12 @@
 // DetallesUsuarios.js
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import UserModal from "../components/screens/userModal";
-import Swal from "sweetalert2";
 import api from "../api/axios";
 
 const DetallesUsuariosScreen = ({ route }) => {
-  const { usuario, cargarUsuario } = route.params;
+  const { usuario } = route.params;
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = React.useState(false);
 
@@ -19,30 +18,33 @@ const DetallesUsuariosScreen = ({ route }) => {
   };
 
   const handleDelete = () => {
-    Swal.fire({
-      title: "¿Estás seguro?",
-      text: "¡No podrás revertir esta acción!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Eliminar",
-      cancelButtonText: "Cancelar",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await api.delete(`/cobradores/${usuario.id}`);
-          cargarUsuario(); // Refresca la lista de usuarios
-          Swal.fire("¡Eliminado!", "El usuario ha sido eliminado.", "success");
-        } catch (error) {
-          console.error(
-            "Error al eliminar usuario:",
-            error.response?.data || error.message
-          );
-          Swal.fire("Error", "No se pudo eliminar el usuario.", "error");
-        }
-      }
-    });
+    Alert.alert(
+      "¿Estás seguro?",
+      "¡No podrás revertir esta acción!",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Eliminar",
+          onPress: async () => {
+            try {
+              await api.delete(`/cobradores/${usuario.id}`);
+              Alert.alert("Eliminado", "El usuario ha sido eliminado.");
+            } catch (error) {
+              console.error(
+                "Error al eliminar usuario:",
+                error.response?.data || error.message
+              );
+              Alert.alert("Error", "No se pudo eliminar el usuario.");
+            }
+          },
+          style: "destructive", // Estilo para acciones peligrosas
+        },
+      ],
+      { cancelable: true } // Permitir cancelar tocando fuera del diálogo
+    );
   };
 
   const handleNavigateToCortes = () => {
@@ -82,7 +84,7 @@ const DetallesUsuariosScreen = ({ route }) => {
         style={styles.button}
         onPress={handleNavigateToDeudores}
       >
-        <Text style={styles.buttonText}>Ver Deudores</Text>
+        <Text style={styles.buttonText}>Ver clientes</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
@@ -95,14 +97,13 @@ const DetallesUsuariosScreen = ({ route }) => {
           <Text style={styles.buttonText}>Editar Agente</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.smallButton} onPress={handleDelete}>
-          <Text style={styles.buttonText}>Eliminar</Text>
+          <Text style={styles.buttonText}>Eliminar Agente</Text>
         </TouchableOpacity>
       </View>
       <UserModal
         visible={modalVisible}
         onClose={cerrarModal}
         usuario={usuario}
-        cargarUsuario={cargarUsuario}
       />
     </View>
   );

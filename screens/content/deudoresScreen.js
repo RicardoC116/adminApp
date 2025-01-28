@@ -49,7 +49,7 @@ const DeudoresScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Deudores de {usuario.name}</Text>
+      <Text style={styles.title}>Clientes de {usuario.name}</Text>
       {loading ? (
         <Text style={styles.loading}>Cargando deudores...</Text>
       ) : (

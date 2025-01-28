@@ -1,8 +1,7 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { TouchableOpacity, Text, StyleSheet, View, Alert } from "react-native";
+import * as Print from "expo-print";
 import api from "../../api/axios";
-import Swal from "sweetalert2";
-import { View } from "react-native-web";
 import { ImprimirIcono } from "../global/iconos";
 
 const CorteDiario = ({
@@ -12,18 +11,21 @@ const CorteDiario = ({
   nombre,
 }) => {
   const confirmarCorteDiario = () => {
-    Swal.fire({
-      title: "¿Estás seguro?",
-      text: "¿Deseas realizar el corte diario?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sí, continuar",
-      cancelButtonText: "Cancelar",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        handleCorteDiario();
-      }
-    });
+    Alert.alert(
+      "¿Estás seguro?",
+      "¿Deseas realizar el corte diario?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Sí, continuar",
+          onPress: handleCorteDiario,
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const handleCorteDiario = async () => {
@@ -33,11 +35,7 @@ const CorteDiario = ({
       new Date(ultimoCorteDiario.fecha).toISOString().split("T")[0] ===
         new Date().toISOString().split("T")[0]
     ) {
-      Swal.fire({
-        title: "Aviso",
-        text: "Ya se ha registrado un corte para este día.",
-        icon: "warning",
-      });
+      Alert.alert("Aviso", "Ya se ha registrado un corte para este día.");
       return;
     }
 
@@ -46,22 +44,15 @@ const CorteDiario = ({
         collector_id: usuarioId,
       });
 
-      Swal.fire({
-        title: "Éxito",
-        text: "Corte diario realizado exitosamente.",
-        icon: "success",
-      });
+      Alert.alert("Éxito", "Corte diario realizado exitosamente.");
 
       if (onCorteRealizado) onCorteRealizado();
     } catch (error) {
       console.error("Error al realizar el corte diario:", error);
-      Swal.fire({
-        title: "Error",
-        text: "No se pudo realizar el corte diario.",
-        icon: "error",
-      });
+      Alert.alert("Error", "No se pudo realizar el corte diario.");
     }
   };
+
   const imprimirDetalles = () => {
     const contenido = `
       <html>
@@ -200,10 +191,9 @@ const CorteDiario = ({
       </html>
     `;
 
-    const ventana = window.open("", "_blank");
-    ventana.document.write(contenido);
-    ventana.document.close();
-    ventana.print();
+    Print.printAsync({
+      html: contenido,
+    });
   };
 
   return (

@@ -12,7 +12,7 @@ import api from "../../api/axios";
 import { Ionicons } from "@expo/vector-icons";
 import Swal from "sweetalert2";
 
-const UserModal = ({ visible, onClose, usuario, cargarUsuario }) => {
+const UserModal = ({ visible, onClose, usuario }) => {
   const [name, setName] = useState(usuario?.name || "");
   const [phoneNumber, setPhoneNumber] = useState(usuario?.phone_number || "");
   const [password, setPassword] = useState("");
@@ -31,12 +31,11 @@ const UserModal = ({ visible, onClose, usuario, cargarUsuario }) => {
 
     try {
       await api.put(`/cobradores/${usuario.id}`, updatedUser);
-      cargarUsuario();
       onClose();
-      Swal.fire("Modificado", "Se ha modificado al agente", "success");
+      Alert.alert("Modificado", "Se ha modificado al agente.");
     } catch (error) {
       console.error(error);
-      Swal.fire("Error", "No se pudo modificar al agente.", "error");
+      Alert.alert("Error", "No se pudo modificar al agente.");
     }
   };
 
@@ -70,7 +69,11 @@ const UserModal = ({ visible, onClose, usuario, cargarUsuario }) => {
               onPress={togglePasswordVisibility}
               style={styles.eyeIcon}
             >
-              <Ionicons name="eye" size={20} color="#888" />
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={20}
+                color="#888"
+              />
             </TouchableOpacity>
           </View>
           <View style={styles.modalButtons}>
@@ -148,6 +151,10 @@ const styles = StyleSheet.create({
     padding: 15,
     fontSize: 16,
     color: "#000",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    marginBottom: 10,
+    borderRadius: 5,
   },
   eyeIcon: {
     padding: 10,

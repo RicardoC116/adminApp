@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
 import api from "../../api/axios";
-import Swal from "sweetalert2";
 import CorteDiario from "../../components/screens/CorteDiario";
 import CorteSemanal from "../../components/screens/CorteSemanal";
+import { formatearMonto } from "../../components/global/dinero";
 
 const CortesScreen = ({ route }) => {
   const { usuario } = route.params;
@@ -18,7 +18,6 @@ const CortesScreen = ({ route }) => {
         api.get(`/cortes/diario/${usuario.id}`),
         api.get(`/cortes/semanal/${usuario.id}`),
       ]);
-      console.log(usuario.id);
 
       setUltimoCorteDiario(
         corteDiarioResponse.data?.length
@@ -32,11 +31,12 @@ const CortesScreen = ({ route }) => {
       );
     } catch (error) {
       console.error("Error al cargar los detalles:", error);
-      Swal.fire({
-        title: "Error",
-        text: "No se pudieron cargar los detalles del corte.",
-        icon: "error",
-      });
+      Alert.alert(
+        "Error",
+        "No se pudieron cargar los detalles del corte.",
+        [{ text: "OK" }],
+        { cancelable: false }
+      );
     } finally {
       setLoading(false);
     }
@@ -85,16 +85,21 @@ const CortesScreen = ({ route }) => {
         "Corte Diario",
         ultimoCorteDiario
           ? {
-              "Cobranza Total": `$${ultimoCorteDiario.cobranza_total ?? 0}`,
+              "Cobranza Total": `${
+                formatearMonto(ultimoCorteDiario.cobranza_total) ?? 0
+              }`,
               "CLientes Cobrados": ultimoCorteDiario.deudores_cobrados ?? 0,
-              "Liquidaciones Totales": `$${
-                ultimoCorteDiario.liquidaciones_total ?? 0
+              "Liquidaciones Totales": `${
+                formatearMonto(ultimoCorteDiario.liquidaciones_total) ?? 0
               }`,
               "Clientes liquidados": ultimoCorteDiario.deudores_liquidados,
               "Créditos Totales": ultimoCorteDiario.creditos_total ?? 0,
               "No Pagos": ultimoCorteDiario.no_pagos_total ?? 0,
-              "Primeros Pagos": `$${
-                ultimoCorteDiario.primeros_pagos_total ?? 0
+              "Primeros Pagos Monto": `${
+                formatearMonto(ultimoCorteDiario.primeros_pagos_montos) ?? 0
+              }`,
+              "Primeros Pagos": `${
+                parseFloat(ultimoCorteDiario.primeros_pagos_total) ?? 0
               }`,
               "Clientes totales": ultimoCorteDiario.deudores_totales,
             }
@@ -145,7 +150,7 @@ const CortesScreen = ({ route }) => {
               }`,
               Gastos: `$${ultimoCorteSemanal.gastos ?? 0}`,
               "Total de Ingresos": `$${ultimoCorteSemanal.total_ingreso ?? 0}`,
-              "Total de EGESOS": `$${ultimoCorteSemanal.total_gasto ?? 0}`,
+              "Total de Egresos": `$${ultimoCorteSemanal.total_gasto ?? 0}`,
               "Saldo Final": `$${ultimoCorteSemanal.saldo_final ?? 0}`,
             }
           : null
@@ -181,7 +186,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   card: {
-    backgroundColor: "#e8c4ff66",
+    backgroundColor: "#002474b8",
     borderRadius: 8,
     padding: 10,
     width: "48%",
@@ -195,13 +200,13 @@ const styles = StyleSheet.create({
     fontSize: Platform.OS === "web" ? 18 : 16,
     textAlign: "center",
     fontWeight: "bold",
-    color: "#000025",
+    color: "#fff",
     marginBottom: 5,
   },
   cardValue: {
     fontSize: Platform.OS === "web" ? 16 : 14,
     textAlign: "center",
-    color: "#000025",
+    color: "#fff",
   },
   noCorteText: {
     fontSize: 16,

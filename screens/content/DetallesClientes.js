@@ -1,35 +1,68 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
+  StyleSheet,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import axios from "../../api/axios";
-
-import { formatearMonto } from "../../components/global/dinero";
 import { useFocusEffect } from "@react-navigation/native";
-import { RenovacionIcono } from "../../components/global/iconos";
+import { formatearMonto } from "../../components/global/dinero";
 import AdminActions from "../../components/screens/admin";
-import RenovacionesModal from "../../components/global/modal";
+import { capitalizeFirstLetter } from "../../components/global/letras";
+// import { RenovacionIcono } from "../../components/global/iconos";
+// import RenovacionesModal from "../../components/global/modal";
 
 const DetallesCliente = ({ route, navigation }) => {
   const { clienteId } = route.params;
   const [detalles, setDetalles] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cobros, setCobros] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false); // Estado para controlar el modal
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const eliminarDeudor = async () => {
+    try {
+      // Mostrar alerta de confirmación
+      Alert.alert(
+        "Eliminar Deudor",
+        "¿Estás seguro de que deseas eliminar a este cliente? Se eliminarán todos sus datos.",
+        [
+          {
+            text: "Cancelar",
+            style: "cancel",
+          },
+          {
+            text: "Eliminar",
+            onPress: async () => {
+              try {
+                // Hacer la petición DELETE al backend
+                await axios.delete(`/deudores/${clienteId}`);
+                // Al eliminar con éxito, regresar a la pantalla anterior
+                navigation.goBack();
+              } catch (error) {
+                console.error("Error al eliminar al deudor:", error);
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error("Error al eliminar deudor:", error);
+    }
+  };
 
   // Función para abrir el modal
-  const abrirModal = () => {
-    setModalVisible(true);
-  };
+  // const abrirModal = () => {
+  //   setModalVisible(true);
+  // };
 
   // Función para cerrar el modal
-  const cerrarModal = () => {
-    setModalVisible(false);
-  };
+  // const cerrarModal = () => {
+  //   setModalVisible(false);
+  // };
+
   // Cargar los detalles del cliente
   useEffect(() => {
     const fetchDetallesCliente = async () => {
@@ -66,19 +99,22 @@ const DetallesCliente = ({ route, navigation }) => {
     }
   };
 
-  // Regargar los detalles al volver a la pantalla
   useFocusEffect(
-    React.useCallback(() => {
-      cargarDetallesCliente();
+    useCallback(() => {
+      const fetchData = async () => {
+        await Promise.all([cargarDetallesCliente(), cargarHistorialPagos()]);
+      };
+      fetchData();
     }, [clienteId])
   );
 
-  // Recargar los detalles al volver a la pantallaa de los historiales de pago
-  useFocusEffect(
-    useCallback(() => {
-      cargarHistorialPagos();
-    }, [clienteId])
-  );
+  // Callback para escuchar cuando regreses de EditarCliente
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      actualizarDetalles(); // Recarga los datos al regresar
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   // Funcion para actualizar ambos detalles al hacer cliick al boton
   const actualizarDetalles = async () => {
@@ -115,7 +151,6 @@ const DetallesCliente = ({ route, navigation }) => {
       />
     </View>
   );
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Detalles de {detalles.name}</Text>
@@ -123,7 +158,7 @@ const DetallesCliente = ({ route, navigation }) => {
       <View style={styles.infoRow}>
         <View style={styles.infoColumn}>
           <Text style={styles.detailText}>
-            Tipo de pago: {detalles.payment_type}
+            Tipo de pago: {capitalizeFirstLetter(detalles.payment_type)}
           </Text>
           <Text style={styles.detailText}>
             Total a pagar: {formatearMonto(detalles.total_to_pay)}
@@ -133,25 +168,34 @@ const DetallesCliente = ({ route, navigation }) => {
           </Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() =>
-            navigation.navigate("EditarCliente", {
-              clienteId,
-              contrato: detalles.contract_number,
-              cobrador: detalles.collector_id,
-              actualizarDetalles: actualizarDetalles,
-              nombreDeudor: detalles.name,
-              montoTotal: detalles.total_to_pay,
-              balance: detalles.balance,
-            })
-          }
-        >
-          <Text style={styles.editButtonText}>Editar</Text>
-        </TouchableOpacity>
+        <View>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() =>
+              navigation.navigate("EditarCliente", {
+                clienteId,
+                contrato: detalles.contract_number,
+                cobrador: detalles.collector_id,
+                nombreDeudor: detalles.name,
+                tipoDePago: detalles.payment_type,
+                montoTotal: detalles.total_to_pay,
+                pagoInicial: detalles.first_payment,
+                balanceActual: detalles.balance,
+              })
+            }
+          >
+            <Text style={styles.editButtonText}>Editar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={eliminarDeudor}
+          >
+            <Text style={styles.deleteButtonText}>Eliminar Cliente</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <View style={styles.renovacionesContainer}>
+      {/* <View style={styles.renovacionesContainer}>
         <Text style={styles.renovacionesText}>
           Renovaciones: {detalles.renovaciones}
         </Text>
@@ -162,13 +206,13 @@ const DetallesCliente = ({ route, navigation }) => {
           <RenovacionIcono size={22} color={"#6c1295"} />
           <Text style={styles.renovacionesButtonText}>Ver</Text>
         </TouchableOpacity>
-      </View>
-
+      </View> */}
+      {/* 
       <RenovacionesModal
         visible={modalVisible}
         onClose={cerrarModal}
         clienteId={clienteId}
-      />
+      /> */}
 
       <Text style={styles.paymentTitle}>Historial de pagos</Text>
 
@@ -180,8 +224,8 @@ const DetallesCliente = ({ route, navigation }) => {
 
       <FlatList
         data={cobros}
-        keyExtractor={(item) => item.id.toString()}
         renderItem={renderPago}
+        keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={
           <Text style={styles.noPagos}>No hay pagos registrados.</Text>
         }
@@ -216,11 +260,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
+  infoRow2: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
   infoColumn: {
     flex: 1,
   },
+  infoColumn2: {},
   detailText: {
-    fontSize: 16,
+    fontSize: 18,
     marginBottom: 10,
   },
   editButton: {
@@ -232,11 +283,12 @@ const styles = StyleSheet.create({
   editButtonText: {
     color: "#fff",
     fontSize: 16,
+    textAlign: "center",
   },
   renovacionesContainer: {
     flexDirection: "column",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "start",
     maxWidth: "fit-content",
     marginBottom: 20,
   },
@@ -246,13 +298,14 @@ const styles = StyleSheet.create({
   renovacionesButton: {
     marginTop: 8,
     flexDirection: "column",
-    alignItems: "center",
+    alignItems: "start",
+    marginLeft: 35,
   },
   renovacionesButtonText: {
     fontSize: 16,
     marginLeft: 5,
     marginVertical: 8,
-    fontWeight: 500,
+    fontWeight: "500",
   },
   paymentTitle: {
     fontSize: 20,
@@ -266,17 +319,32 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 8,
     flexDirection: "row",
+    // rowGap: 10,
+    // gap:50,
     justifyContent: "space-between",
     alignItems: "center",
   },
   paymentText: {
     fontSize: 16,
+    flex: 1,
   },
   noPagos: {
     fontSize: 16,
     color: "#999",
     textAlign: "center",
     marginTop: 20,
+  },
+  deleteButton: {
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: "#d9534f",
+    borderRadius: 8,
+  },
+  deleteButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    textAlign: "center",
   },
 });
 

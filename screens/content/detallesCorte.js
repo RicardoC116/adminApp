@@ -1,8 +1,53 @@
+import { useNavigation } from "@react-navigation/native";
 import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Button,
+  Alert,
+} from "react-native";
+import axios from "../../api/axios";
 
 export default function DetallesCorte({ route }) {
   const { corte, tipo } = route.params;
+  const navigation = useNavigation();
+
+  // Función para eliminar el corte
+  const handleEliminarCorte = async () => {
+    // Mostrar alerta de confirmación antes de eliminar el corte
+    Alert.alert(
+      "Confirmar Eliminación",
+      "¿Estás seguro de que deseas eliminar este corte?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel", // Cancela la acción si el usuario elige 'Cancelar'
+        },
+        {
+          text: "Eliminar",
+          onPress: async () => {
+            try {
+              // Elimina el corte dependiendo del tipo (diario o semanal)
+              const url =
+                tipo === "diario"
+                  ? `/cortes/diario/${corte.id}`
+                  : `/cortes/semanal/${corte.id}`;
+
+              await axios.delete(url); // Realiza la solicitud DELETE
+
+              // Regresa a la pantalla de historial de cortes después de eliminar
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert("Error", "Error al eliminar el corte");
+              console.error("Error al eliminar el corte:", error);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -72,7 +117,6 @@ export default function DetallesCorte({ route }) {
               label="Nuevos clientes:"
               value={`$${corte.nuevos_deudores}`}
             />
-
             <Detail
               label="creditos total monto:"
               value={`$${corte.creditos_total_monto}`}
@@ -112,6 +156,7 @@ export default function DetallesCorte({ route }) {
             <Detail label="total_agente:" value={`$${corte.total_agente}`} />
           </>
         )}
+        <Button title="Eliminar corte" onPress={handleEliminarCorte} />
       </View>
     </ScrollView>
   );

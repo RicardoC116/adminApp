@@ -61,7 +61,6 @@ const MainScreen = () => {
   const handleUserClick = (usuario) => {
     navigation.navigate("DetallesUsuarios", {
       usuario,
-      cargarUsuario: fetchUsuarios,
     });
   };
 
@@ -71,9 +70,7 @@ const MainScreen = () => {
       style={styles.userItem}
       onPress={() => handleUserClick(item)}
     >
-      <Text className="text-red-600 text-center" style={styles.userText}>
-        {item.name}
-      </Text>
+      <Text style={styles.userText}>{item.name}</Text>
     </TouchableOpacity>
   );
 

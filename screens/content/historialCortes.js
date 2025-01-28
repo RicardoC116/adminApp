@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import axios from "../../api/axios"; // Ruta hacia tu instancia de axios
-import { useNavigation } from "@react-navigation/native";
-import { ActivityIndicator } from "react-native-web";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { ActivityIndicator } from "react-native";
 
 const HistorialCortesScreen = ({ route }) => {
   const { usuario } = route.params; // Recibimos el cobrador.
@@ -17,26 +17,33 @@ const HistorialCortesScreen = ({ route }) => {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
+  // Definimos la función fetchCortes fuera de useEffect para que pueda ser llamada dentro de useFocusEffect
+  const fetchCortes = async () => {
+    try {
+      const [diariosResponse, semanalesResponse] = await Promise.all([
+        axios.get(`/cortes/diario/${usuario.id}`),
+        axios.get(`/cortes/semanal/${usuario.id}`),
+      ]);
+
+      setCortesDiarios(diariosResponse.data);
+      setCortesSemanales(semanalesResponse.data);
+    } catch (error) {
+      console.error("Error al cargar los cortes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Cargar cortes diarios y semanales
-    const fetchCortes = async () => {
-      try {
-        const [diariosResponse, semanalesResponse] = await Promise.all([
-          axios.get(`/cortes/diario/${usuario.id}`),
-          axios.get(`/cortes/semanal/${usuario.id}`),
-        ]);
-
-        setCortesDiarios(diariosResponse.data);
-        setCortesSemanales(semanalesResponse.data);
-      } catch (error) {
-        console.error("Error al cargar los cortes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCortes();
+    fetchCortes(); // Cargar los cortes al montar el componente
   }, [usuario.id]);
+
+  // Usamos useFocusEffect para cargar los cortes cada vez que la pantalla se enfoque
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchCortes(); // Vuelve a cargar los cortes cada vez que se enfoque la pantalla
+    }, [usuario.id]) // Dependencia en usuario.id para que se recarguen cuando cambie
+  );
 
   // Navegar a los detalles del corte seleccionado
   const handleCortePress = (corte, tipo) => {
@@ -96,7 +103,7 @@ const HistorialCortesScreen = ({ route }) => {
         </>
       )}
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#00ff00" />
       ) : (
         <>
           <Text style={styles.subtitle}>Cortes Semanales</Text>

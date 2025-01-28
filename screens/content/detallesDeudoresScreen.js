@@ -89,7 +89,7 @@ const DetallesDeudor = ({ route }) => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.loading}>Cargando detalles del deudor...</Text>
+        <Text style={styles.loading}>Cargando detalles del cliente...</Text>
       </View>
     );
   }
@@ -97,7 +97,7 @@ const DetallesDeudor = ({ route }) => {
   if (!detalles) {
     return (
       <View style={styles.container}>
-        <Text style={styles.error}>No se pudieron cargar los detalles.</Text>
+        <Text style={styles.error}>No se pudieron cargar los clientes.</Text>
       </View>
     );
   }

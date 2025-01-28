@@ -1,16 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Button,
-  Platform,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import api from "../../api/axios";
-import Swal from "sweetalert2";
-import { TouchableOpacity } from "react-native-web";
+import * as Print from "expo-print";
+
 import { ImprimirIcono } from "../../components/global/iconos";
 
 const CorteAgenteScreen = ({ route }) => {
@@ -34,11 +27,8 @@ const CorteAgenteScreen = ({ route }) => {
       }
     } catch (error) {
       console.error("Error al cargar los datos del corte agente:", error);
-      Swal.fire({
-        title: "Error",
-        text: "No se pudieron cargar los detalles del corte agente.",
-        icon: "error",
-      });
+      // Alerta de error
+      Alert.alert("Error", "Error al cargar los datos del corte agente");
     } finally {
       setLoading(false);
     }
@@ -220,10 +210,9 @@ const CorteAgenteScreen = ({ route }) => {
         </html>
       `;
 
-    const ventana = window.open("", "_blank");
-    ventana.document.write(contenido);
-    ventana.document.close();
-    ventana.print();
+    Print.printAsync({
+      html: contenido,
+    });
   };
 
   return (

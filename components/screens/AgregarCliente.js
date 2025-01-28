@@ -1,7 +1,5 @@
-// AgregarCliebte.js
-
 import React, { useState, useEffect } from "react";
-import { View, TextInput, Button, StyleSheet, Text } from "react-native";
+import { View, TextInput, Button, StyleSheet, Alert } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import api from "../../api/axios";
 
@@ -59,21 +57,37 @@ const AgregarDeudor = () => {
         .post("/deudores", newClient)
         .then((response) => {
           console.log(response.data);
+          // Mostrar alerta de éxito
+          Alert.alert(
+            "Cliente Agregado",
+            `El cliente "${name}" fue agregado exitosamente.`,
+            [{ text: "OK" }]
+          );
+          // Reiniciar los campos del formulario
+          setName("");
+          setContract_number("");
+          setAmount("");
+          setTotalToPay("");
+          setFirstPayment("");
+          setBalance("");
+          setTipo("");
+          setCobrador(null);
         })
         .catch((error) => {
           console.error("Error al agregar deudor:", error);
+          // Mostrar alerta de error
+          Alert.alert(
+            "Error",
+            "Hubo un problema al agregar el cliente. Por favor, inténtalo nuevamente.",
+            [{ text: "OK" }]
+          );
         });
-
-      setName("");
-      setContract_number("");
-      setAmount("");
-      setTotalToPay("");
-      setFirstPayment("");
-      setBalance("");
-      setTipo("");
-      setCobrador(null);
     } else {
-      alert("Por favor, completa todos los campos.");
+      Alert.alert(
+        "Campos incompletos",
+        "Por favor, completa todos los campos antes de agregar el cliente.",
+        [{ text: "Entendido" }]
+      );
     }
   };
 
@@ -106,7 +120,6 @@ const AgregarDeudor = () => {
         keyboardType="numeric"
         style={styles.input}
       />
-
       <TextInput
         placeholder="Balance"
         value={balance}
@@ -114,7 +127,6 @@ const AgregarDeudor = () => {
         keyboardType="numeric"
         style={styles.input}
       />
-
       <TextInput
         placeholder="Primer Pago"
         value={first_payment}
@@ -122,8 +134,6 @@ const AgregarDeudor = () => {
         keyboardType="numeric"
         style={styles.input}
       />
-
-      {/* DropDownPicker para el tipo de pago */}
       <DropDownPicker
         open={openTipo}
         value={tipo}
@@ -133,14 +143,8 @@ const AgregarDeudor = () => {
         setItems={setItemsTipo}
         containerStyle={styles.dropdownContainer}
         style={styles.dropdown}
-        dropDownContainerStyle={styles.dropdownContent}
-        labelStyle={styles.dropdownLabel}
-        listItemLabelStyle={styles.dropdownItemLabel}
-        arrowIconStyle={styles.dropdownArrow}
         placeholder="Selecciona el tipo de pago"
       />
-
-      {/* DropDownPicker para seleccionar cobradores */}
       <DropDownPicker
         open={openCobrador}
         value={cobrador}
@@ -150,13 +154,8 @@ const AgregarDeudor = () => {
         setItems={setItemsCobrador}
         containerStyle={styles.dropdownContainer2}
         style={styles.dropdown}
-        dropDownContainerStyle={styles.dropdownContent}
-        labelStyle={styles.dropdownLabel}
-        listItemLabelStyle={styles.dropdownItemLabel}
-        arrowIconStyle={styles.dropdownArrow}
-        placeholder="Selecciona a un agentes"
+        placeholder="Selecciona a un agente"
       />
-
       <Button
         title="Agregar al cliente"
         onPress={handleAddClient}
@@ -180,31 +179,15 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     marginBottom: 10,
-    borderColor: "#ccc",
     zIndex: 3,
   },
   dropdownContainer2: {
     marginBottom: 20,
-    borderColor: "#ccc",
     zIndex: 2,
   },
   dropdown: {
     borderColor: "#ccc",
     backgroundColor: "#fafafa",
-  },
-  dropdownContent: {
-    backgroundColor: "#fff",
-    borderColor: "#ccc",
-  },
-  dropdownLabel: {
-    color: "#000",
-    fontSize: 16,
-  },
-  dropdownItemLabel: {
-    color: "#000",
-  },
-  dropdownArrow: {
-    tintColor: "#8967B3",
   },
 });
 

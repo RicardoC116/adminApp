@@ -1,191 +1,237 @@
-// components/CorteSemanal
-import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+  Alert,
+  TextInput,
+} from "react-native";
+import { Calendar } from "react-native-calendars";
 import api from "../../api/axios";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
-import { View } from "react-native-web";
+import * as Print from "expo-print";
 import { ImprimirIcono } from "../global/iconos";
-import "../../styles.css";
 
-const MySwal = withReactContent(Swal);
+const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+  const [comisionCobro, setComisionCobro] = useState("");
+  const [comisionVentas, setComisionVentas] = useState("");
+  const [gastos, setGastos] = useState("");
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isCalendarOpen2, setIsCalendarOpen2] = useState(false);
 
-const CorteSemanal = ({ usuarioId, ultimoCorteSemanal }) => {
-  const confirmarCorteSemanal = () => {
-    MySwal.fire({
-      title:
-        "<h2 style='color: #000; font-size: 24px; font-weight: bold; font-family: system-ui; '>Crear Corte Semanal</h2>",
-      html: `
-        <div style="text-align: left; font-size: 17px; color: #333; line-height: 1.5; font-family: math;">
-          <label for="fecha_inicio" style="display: block; margin-bottom: 5px;">Fecha de Inicio:</label>
-          <input type="date" id="fecha_inicio" class="swal2-input" style="margin-bottom: 10px;">
-  
-          <label for="fecha_fin" style="display: block; margin-bottom: 5px;">Fecha de Fin:</label>
-          <input type="date" id="fecha_fin" class="swal2-input" style="margin-bottom: 10px;">
-  
-          <label for="comision_cobro" style="display: block; margin-bottom: 5px;">Comisión de Cobro:</label>
-          <input type="number" id="comision_cobro" class="swal2-input" style="margin-bottom: 10px;" placeholder="Ingresa la comisión de cobro">
-  
-          <label for="comision_ventas" style="display: block; margin-bottom: 5px;">Comisión de Ventas:</label>
-          <input type="number" id="comision_ventas" class="swal2-input" style="margin-bottom: 10px;" placeholder="Ingresa la comisión de ventas">
-  
-          <label for="gastos" style="display: block; margin-bottom: 5px;">Gastos:</label>
-          <input type="number" id="gastos" class="swal2-input" style="margin-bottom: 10px;" placeholder="Ingresa los gastos">
-        </div>
-      `,
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: '<span style="font-size: 16px;">Crear Corte</span>',
-      cancelButtonText: '<span style="font-size: 16px;">Cancelar</span>',
-      customClass: {
-        popup: "swal2-custom-popup",
-        confirmButton: "swal2-custom-confirm-button",
-        cancelButton: "swal2-custom-cancel-button",
-      },
-      preConfirm: () => {
-        const fecha_inicio = document.getElementById("fecha_inicio").value;
-        const fecha_fin = document.getElementById("fecha_fin").value;
-        const comision_cobro = document.getElementById("comision_cobro").value;
-        const comision_ventas =
-          document.getElementById("comision_ventas").value;
-        const gastos = document.getElementById("gastos").value;
+  const handleCorteSemanal = async () => {
+    if (
+      !fechaInicio ||
+      !fechaFin ||
+      !comisionCobro ||
+      !comisionVentas ||
+      !gastos
+    ) {
+      Alert.alert("Error", "Todos los campos son obligatorios.");
+      return;
+    }
 
-        if (
-          !fecha_inicio ||
-          !fecha_fin ||
-          !comision_cobro ||
-          !comision_ventas ||
-          !gastos
-        ) {
-          Swal.showValidationMessage("Todos los campos son obligatorios.");
-          return false;
-        }
-
-        return {
-          fecha_inicio,
-          fecha_fin,
-          comision_cobro,
-          comision_ventas,
-          gastos,
-        };
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        handleCorteSemanal(result.value);
-      }
-    });
-  };
-
-  const handleCorteSemanal = async (data) => {
     try {
-      await api.post("/cortes/semanal", {
+      const response = await api.post("/cortes/semanal", {
         collector_id: usuarioId,
-        ...data,
+        fecha_inicio: fechaInicio,
+        fecha_fin: fechaFin,
+        comision_cobro: comisionCobro,
+        comision_ventas: comisionVentas,
+        gastos,
       });
 
-      Swal.fire({
-        title: "Éxito",
-        text: "Corte semanal realizado exitosamente.",
-        icon: "success",
-      });
+      // Si todo es exitoso, mostramos una alerta de éxito
+      Alert.alert("Éxito", "Corte semanal realizado exitosamente.");
+      onCorteRealizado();
+      setModalVisible(false); // Cerrar el modal después de guardar
     } catch (error) {
       console.error("Error al realizar el corte semanal:", error);
-      Swal.fire({
-        title: "Error",
-        text: "No se pudo realizar el corte semanal.",
-        icon: "error",
-      });
+
+      // Comprobamos si el error es un 409 (rango de fechas ya cubierto)
+      if (error.response && error.response.status === 409) {
+        const errorMessage = error.response.data.error;
+        const rangoExistente = error.response.data.rangoExistente;
+        Alert.alert(
+          "Error",
+          `${errorMessage}\nFecha inicio: ${rangoExistente.fecha_inicio}\nFecha fin: ${rangoExistente.fecha_fin}`
+        );
+      } else if (error.response && error.response.status === 404) {
+        Alert.alert(
+          "Error",
+          error.response.data.error ||
+            "No se encontraron cortes diarios en este rango."
+        );
+      } else {
+        // Si es otro tipo de error, mostramos un mensaje genérico
+        Alert.alert("Error", "No se pudo realizar el corte semanal.");
+      }
     }
   };
 
   const imprimirDetalles = () => {
     const contenido = `
-        <html>
-          <head>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                margin: 20px;
-                color: #333;
-              }
-              h1 {
-                font-size: 24px;
-                color: #4CAF50;
-                text-align: center;
-                margin-bottom: 20px;
-              }
-              table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-bottom: 30px;
-              }
-              th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-              }
-              th {
-                background-color: #f2f2f2;
-                font-weight: bold;
-              }
-              .signature {
-                margin-top: 50px;
-                text-align: center;
-              }
-              .signature-line {
-                margin-top: 20px;
-                border-top: 1px solid #333;
-                width: 50%;
-                margin-left: auto;
-                margin-right: auto;
-              }
-            </style>
-          </head>
-          <body>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+            h1 { font-size: 24px; color: #4CAF50; text-align: center; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            .signature { margin-top: 50px; text-align: center; }
+            .signature-line { margin-top: 20px; border-top: 1px solid #333; width: 50%; margin-left: auto; margin-right: auto; }
+          </style>
+        </head>
+        <body>
+          <h1>Detalles del Corte Semanal</h1>
+          ${
+            ultimoCorteSemanal
+              ? `
+          <table>
+            ${Object.entries(ultimoCorteSemanal)
+              .map(
+                ([key, value]) => `
+              <tr>
+                <th>${key.replace(/_/g, " ")}</th>
+                <td>${value}</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </table>`
+              : "<p>No hay datos disponibles para el corte semanal.</p>"
+          }
+          <div class="signature">
+            <p>Firma:</p>
+            <div class="signature-line"></div>
+          </div>
+        </body>
+      </html>
+    `;
 
-            <h1>Detalles del Corte Semanal</h1>
-            ${
-              ultimoCorteSemanal
-                ? `
-            <table>
-              ${Object.entries(ultimoCorteSemanal)
-                .map(
-                  ([key, value]) => `
-                <tr>
-                  <th>${key.replace(/_/g, " ")}</th>
-                  <td>${value}</td>
-                </tr>
-              `
-                )
-                .join("")}
-            </table>`
-                : "<p>No hay datos disponibles para el corte semanal.</p>"
-            }
-    
-            <div class="signature">
-              <p>Firma:</p>
-              <div class="signature-line"></div>
-            </div>
-          </body>
-        </html>
-      `;
-
-    const ventana = window.open("", "_blank");
-    ventana.document.write(contenido);
-    ventana.document.close();
-    ventana.print();
+    Print.printAsync({
+      html: contenido,
+    });
   };
- 
+
   return (
     <View>
-      <TouchableOpacity style={styles.button} onPress={confirmarCorteSemanal}>
+      {/* Botón para abrir el modal */}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => setModalVisible(true)}
+      >
         <Text style={styles.buttonText}>Corte Semanal</Text>
       </TouchableOpacity>
+
       <TouchableOpacity style={styles.imprimir} onPress={imprimirDetalles}>
         <Text style={styles.imprimirTexto}>
           <ImprimirIcono size={24} />
         </Text>
       </TouchableOpacity>
+
+      {/* Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Crear Corte Semanal</Text>
+
+            {/* Mostrar la fecha seleccionada en un "input" */}
+            <TouchableOpacity
+              onPress={() => setIsCalendarOpen(!isCalendarOpen)}
+            >
+              <Text style={styles.input}>
+                {fechaInicio
+                  ? `Fecha Inicio: ${fechaInicio}`
+                  : "Selecciona la Fecha de Inicio"}
+              </Text>
+            </TouchableOpacity>
+            {/* Mostrar el calendario solo cuando el estado isCalendarOpen sea true */}
+            {isCalendarOpen && (
+              <Calendar
+                onDayPress={(day) => {
+                  setFechaInicio(day.dateString);
+                  setIsCalendarOpen(false); // Cerrar el calendario después de seleccionar la fecha
+                }}
+                markedDates={{
+                  [fechaInicio]: { selected: true, selectedColor: "green" },
+                }}
+                monthFormat={"yyyy MM"}
+              />
+            )}
+
+            <TouchableOpacity
+              onPress={() => setIsCalendarOpen2(!isCalendarOpen2)}
+            >
+              <Text style={styles.input}>
+                {fechaFin
+                  ? `Fecha Fin: ${fechaFin}`
+                  : "Selecciona la Fecha de Fin"}
+              </Text>
+            </TouchableOpacity>
+            {/* Mostrar el calendario solo cuando el estado isCalendarOpen sea true */}
+            {isCalendarOpen2 && (
+              <Calendar
+                onDayPress={(day) => {
+                  setFechaFin(day.dateString);
+                  setIsCalendarOpen2(false); // Cerrar el calendario después de seleccionar la fecha
+                }}
+                markedDates={{
+                  [fechaFin]: { selected: true, selectedColor: "green" },
+                }}
+                monthFormat={"yyyy MM"}
+              />
+            )}
+
+            <TextInput
+              placeholder="Comisión de Cobro"
+              style={styles.input}
+              keyboardType="numeric"
+              value={comisionCobro}
+              onChangeText={setComisionCobro}
+            />
+            <TextInput
+              placeholder="Comisión de Ventas"
+              style={styles.input}
+              keyboardType="numeric"
+              value={comisionVentas}
+              onChangeText={setComisionVentas}
+            />
+            <TextInput
+              placeholder="Gastos"
+              style={styles.input}
+              keyboardType="numeric"
+              value={gastos}
+              onChangeText={setGastos}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={handleCorteSemanal}
+              >
+                <Text style={styles.confirmButtonText}>Crear Corte</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -210,9 +256,56 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
     fontSize: 15,
-    alignContent: "center",
-    alignItems: "center",
     alignSelf: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    width: "90%",
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
+  },
+  input: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+  },
+  confirmButton: {
+    backgroundColor: "#28a745",
+    padding: 10,
+    borderRadius: 5,
+  },
+  confirmButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    backgroundColor: "#dc3545",
+    padding: 10,
+    borderRadius: 5,
+  },
+  cancelButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 
