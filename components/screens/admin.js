@@ -11,29 +11,18 @@ import {
 import axios from "../../api/axios";
 import { formatearMonto } from "../global/dinero";
 
-const CONTRASENA_LOCAL = "serpiente79";
+// const CONTRASENA_LOCAL = "serpiente79";
 
-const AdminActions = ({ cobroId, amount, actualizarDetalles }) => {
+const AdminActions = ({
+  cobroId,
+  amount,
+  actualizarDetalles,
+  isAutorizado,
+  verificarContraseña,
+  handleConfirmPassword,
+}) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
   const [nuevoMonto, setNuevoMonto] = useState("");
-  const [password, setPassword] = useState("");
-  const [isAutorizado, setIsAutorizado] = useState(false);
-
-  const verificarContraseña = () => {
-    setIsPasswordModalVisible(true); // Muestra el modal para ingresar la contraseña
-  };
-
-  const handleConfirmPassword = () => {
-    if (password === CONTRASENA_LOCAL) {
-      setIsAutorizado(true); // Marca al usuario como autorizado
-      setIsPasswordModalVisible(false); // Cierra el modal
-      setPassword(""); // Limpia la contraseña
-    } else {
-      Alert.alert("Error", "Contraseña incorrecta.");
-      setIsAutorizado(false);
-    }
-  };
 
   const eliminarCobro = async () => {
     if (!isAutorizado) {
@@ -143,39 +132,6 @@ const AdminActions = ({ cobroId, amount, actualizarDetalles }) => {
             <TouchableOpacity
               style={[styles.buttonModal, styles.cancelButton]}
               onPress={() => setIsModalVisible(false)}
-            >
-              <Text style={styles.buttonText}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal para la contraseña */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isPasswordModalVisible}
-        onRequestClose={() => setIsPasswordModalVisible(false)}
-      >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Verificación requerida</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ingresa tu contraseña"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-            <TouchableOpacity
-              style={[styles.buttonModal, styles.confirmButton]}
-              onPress={handleConfirmPassword}
-            >
-              <Text style={styles.buttonText}>Confirmar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.buttonModal, styles.cancelButton]}
-              onPress={() => setIsPasswordModalVisible(false)}
             >
               <Text style={styles.buttonText}>Cancelar</Text>
             </TouchableOpacity>

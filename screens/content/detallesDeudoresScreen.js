@@ -5,17 +5,34 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Modal,
+  TextInput,
+  Alert,
 } from "react-native";
 import axios from "../../api/axios";
 import { formatearMonto } from "../../components/global/dinero";
 import { useFocusEffect } from "@react-navigation/native";
 import AdminActions from "../../components/screens/admin";
+import { capitalizeFirstLetter } from "../../components/global/letras";
 
-const DetallesDeudor = ({ route }) => {
+const DetallesDeudor = ({ route, navigation }) => {
   const { deudor } = route.params;
   const [detalles, setDetalles] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cobros, setCobros] = useState([]);
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+  const [password, setPassword] = useState("");
+  const [isAutorizado, setIsAutorizado] = useState(false);
+
+  const handleConfirmPassword = () => {
+    if (password === "serpiente79") {
+      setIsAutorizado(true);
+      setIsPasswordModalVisible(false);
+      setPassword("");
+    } else {
+      Alert.alert("Error", "Contraseña incorrecta.");
+    }
+  };
 
   useEffect(() => {
     const fetchDetallesDeudor = async () => {
@@ -52,6 +69,14 @@ const DetallesDeudor = ({ route }) => {
     }
   };
 
+  // Lo nuevo
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", () => {
+      setIsAutorizado(false);
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   // Recargar los detalles al volver a la pantallaa de los historiales de pago
   useFocusEffect(
     useCallback(() => {
@@ -82,6 +107,9 @@ const DetallesDeudor = ({ route }) => {
         cobroId={item.id}
         amount={item.amount}
         actualizarDetalles={actualizarDetalles}
+        isAutorizado={isAutorizado}
+        verificarContraseña={() => setIsPasswordModalVisible(true)}
+        handleConfirmPassword={handleConfirmPassword}
       />
     </View>
   );
@@ -107,7 +135,7 @@ const DetallesDeudor = ({ route }) => {
       <Text style={styles.title}>Detalles de {detalles.name}</Text>
       <View style={styles.balanceContainer}>
         <Text style={styles.detailText}>
-          Tipo de pago: {detalles.payment_type}
+          Tipo de pago: {capitalizeFirstLetter(detalles.payment_type)}
         </Text>
         <Text style={styles.detailText}>
           Total a pagar: {formatearMonto(detalles.total_to_pay)}
@@ -128,6 +156,39 @@ const DetallesDeudor = ({ route }) => {
         }
         contentContainerStyle={styles.listContent}
       />
+
+      {/* Esto es lo nuevo que me has dado  */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isPasswordModalVisible}
+        onRequestClose={() => setIsPasswordModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Verificación requerida</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ingresa tu contraseña"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity
+              style={[styles.buttonModal, styles.confirmButton]}
+              onPress={handleConfirmPassword}
+            >
+              <Text style={styles.buttonText}>Confirmar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.buttonModal, styles.cancelButton]}
+              onPress={() => setIsPasswordModalVisible(false)}
+            >
+              <Text style={styles.buttonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -170,7 +231,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   detailText: {
-    fontSize: 16,
+    fontSize: 18,
     marginBottom: 10,
   },
   button: {
@@ -187,6 +248,43 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 14,
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContainer: {
+    width: 300,
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  input: {
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  confirmButton: {
+    backgroundColor: "#4CAF50",
+  },
+  cancelButton: {
+    backgroundColor: "#d9534f",
+  },
+  buttonModal: {
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 5,
+    marginVertical: 5,
   },
 });
 

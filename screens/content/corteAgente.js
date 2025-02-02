@@ -15,7 +15,7 @@ const CorteAgenteScreen = ({ route }) => {
     setLoading(true);
     try {
       const response = await api.get(`/cortes/semanal/${usuario.id}`);
-      console.log("Respuesta del backend:", response.data);
+      // console.log("Respuesta del backend:", response.data);
 
       if (response.data.length > 0) {
         const datosOrdenados = response.data.sort(

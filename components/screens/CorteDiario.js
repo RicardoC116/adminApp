@@ -2,6 +2,7 @@ import React from "react";
 import { TouchableOpacity, Text, StyleSheet, View, Alert } from "react-native";
 import * as Print from "expo-print";
 import api from "../../api/axios";
+import { DateTime } from "luxon";
 import { ImprimirIcono } from "../global/iconos";
 
 const CorteDiario = ({
@@ -29,11 +30,16 @@ const CorteDiario = ({
   };
 
   const handleCorteDiario = async () => {
+    // Obtener la fecha local de México
+    const fechaHoyLocal = DateTime.now()
+      .setZone("America/Mexico_City")
+      .toFormat("yyyy-MM-dd");
+
     // Validar si ya se hizo un corte en el día actual
     if (
       ultimoCorteDiario &&
-      new Date(ultimoCorteDiario.fecha).toISOString().split("T")[0] ===
-        new Date().toISOString().split("T")[0]
+      DateTime.fromISO(ultimoCorteDiario.fecha).toFormat("yyyy-MM-dd") ===
+        fechaHoyLocal
     ) {
       Alert.alert("Aviso", "Ya se ha registrado un corte para este día.");
       return;
@@ -52,7 +58,6 @@ const CorteDiario = ({
       Alert.alert("Error", "No se pudo realizar el corte diario.");
     }
   };
-
   const imprimirDetalles = () => {
     const contenido = `
       <html>

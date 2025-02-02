@@ -6,21 +6,34 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Modal,
+  TextInput,
 } from "react-native";
 import axios from "../../api/axios";
 import { useFocusEffect } from "@react-navigation/native";
 import { formatearMonto } from "../../components/global/dinero";
 import AdminActions from "../../components/screens/admin";
 import { capitalizeFirstLetter } from "../../components/global/letras";
-// import { RenovacionIcono } from "../../components/global/iconos";
-// import RenovacionesModal from "../../components/global/modal";
 
 const DetallesCliente = ({ route, navigation }) => {
   const { clienteId } = route.params;
   const [detalles, setDetalles] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cobros, setCobros] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+  const [password, setPassword] = useState("");
+  const [isAutorizado, setIsAutorizado] = useState(false);
+
+  // Función para verificar contraseña (Lo nuevo)
+  const handleConfirmPassword = () => {
+    if (password === "serpiente79") {
+      setIsAutorizado(true);
+      setIsPasswordModalVisible(false);
+      setPassword("");
+    } else {
+      Alert.alert("Error", "Contraseña incorrecta.");
+    }
+  };
 
   const eliminarDeudor = async () => {
     try {
@@ -52,16 +65,6 @@ const DetallesCliente = ({ route, navigation }) => {
       console.error("Error al eliminar deudor:", error);
     }
   };
-
-  // Función para abrir el modal
-  // const abrirModal = () => {
-  //   setModalVisible(true);
-  // };
-
-  // Función para cerrar el modal
-  // const cerrarModal = () => {
-  //   setModalVisible(false);
-  // };
 
   // Cargar los detalles del cliente
   useEffect(() => {
@@ -99,6 +102,14 @@ const DetallesCliente = ({ route, navigation }) => {
     }
   };
 
+  // Lo nuevo
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", () => {
+      setIsAutorizado(false);
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
@@ -107,14 +118,6 @@ const DetallesCliente = ({ route, navigation }) => {
       fetchData();
     }, [clienteId])
   );
-
-  // Callback para escuchar cuando regreses de EditarCliente
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("focus", () => {
-      actualizarDetalles(); // Recarga los datos al regresar
-    });
-    return unsubscribe;
-  }, [navigation]);
 
   // Funcion para actualizar ambos detalles al hacer cliick al boton
   const actualizarDetalles = async () => {
@@ -148,6 +151,9 @@ const DetallesCliente = ({ route, navigation }) => {
         cobroId={item.id}
         amount={item.amount}
         actualizarDetalles={actualizarDetalles}
+        isAutorizado={isAutorizado}
+        verificarContraseña={() => setIsPasswordModalVisible(true)}
+        handleConfirmPassword={handleConfirmPassword}
       />
     </View>
   );
@@ -195,25 +201,6 @@ const DetallesCliente = ({ route, navigation }) => {
         </View>
       </View>
 
-      {/* <View style={styles.renovacionesContainer}>
-        <Text style={styles.renovacionesText}>
-          Renovaciones: {detalles.renovaciones}
-        </Text>
-        <TouchableOpacity
-          style={styles.renovacionesButton}
-          onPress={abrirModal}
-        >
-          <RenovacionIcono size={22} color={"#6c1295"} />
-          <Text style={styles.renovacionesButtonText}>Ver</Text>
-        </TouchableOpacity>
-      </View> */}
-      {/* 
-      <RenovacionesModal
-        visible={modalVisible}
-        onClose={cerrarModal}
-        clienteId={clienteId}
-      /> */}
-
       <Text style={styles.paymentTitle}>Historial de pagos</Text>
 
       <View style={styles.paymentItem}>
@@ -231,6 +218,39 @@ const DetallesCliente = ({ route, navigation }) => {
         }
         contentContainerStyle={styles.listContent}
       />
+
+      {/* Esto es lo nuevo que me has dado  */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isPasswordModalVisible}
+        onRequestClose={() => setIsPasswordModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Verificación requerida</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ingresa tu contraseña"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity
+              style={[styles.buttonModal, styles.confirmButton]}
+              onPress={handleConfirmPassword}
+            >
+              <Text style={styles.buttonText}>Confirmar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.buttonModal, styles.cancelButton]}
+              onPress={() => setIsPasswordModalVisible(false)}
+            >
+              <Text style={styles.buttonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -345,6 +365,47 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     textAlign: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContainer: {
+    width: 300,
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  input: {
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  confirmButton: {
+    backgroundColor: "#4CAF50",
+  },
+  cancelButton: {
+    backgroundColor: "#d9534f",
+  },
+  buttonModal: {
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 5,
+    marginVertical: 5,
   },
 });
 

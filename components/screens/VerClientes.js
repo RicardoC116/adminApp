@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import InputWithIcon from "../global/inputWithIcon";
-import { ClientesIcono } from "../global/iconos";
+import { ClientesIcono, DiaIcono, SemanaIcono } from "../global/iconos";
 
 const VerClientesScreen = ({ navigation }) => {
   const [clientes, setClientes] = useState([]);
@@ -90,12 +90,16 @@ const VerClientesScreen = ({ navigation }) => {
           navigation.navigate("DetallesClientes", { clienteId: item.id })
         }
       >
-        <ClientesIcono size={25} color="#000000" />
+        {item.payment_type === "semanal" ? (
+          <SemanaIcono size={25} color={"#000000"} />
+        ) : (
+          <DiaIcono size={25} color={"#000000"} />
+        )}
         <Text style={styles.buttonText}>{item.name}</Text>
-        <Text style={styles.buttonText}>{item.balance}</Text>
       </TouchableOpacity>
     </View>
   );
+  
 
   if (loading) {
     return (

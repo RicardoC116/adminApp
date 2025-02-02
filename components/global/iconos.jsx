@@ -49,3 +49,20 @@ export const ClientesIcono = ({ focused, color, size }) => {
 export const RenovacionIcono = ({ focused, color, size }) => {
   return <FontAwesome5 name="history" size={size} color={color} />;
 };
+
+export const DiaIcono = ({ focused, color, size }) => {
+  return (
+    <MaterialCommunityIcons name="calendar-outline" size={size} color={color} />
+  );
+};
+
+// exportar icono de calendarWeek de fontAwasome5
+export const SemanaIcono = ({ focused, color, size }) => {
+  return (
+    <MaterialCommunityIcons
+      name="calendar-range-outline"
+      size={size}
+      color={color}
+    />
+  );
+};

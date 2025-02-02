@@ -25,8 +25,8 @@ const HistorialCortesScreen = ({ route }) => {
         axios.get(`/cortes/semanal/${usuario.id}`),
       ]);
 
-      setCortesDiarios(diariosResponse.data);
-      setCortesSemanales(semanalesResponse.data);
+      setCortesDiarios(diariosResponse.data.reverse());
+      setCortesSemanales(semanalesResponse.data.reverse());
     } catch (error) {
       console.error("Error al cargar los cortes:", error);
     } finally {
@@ -142,7 +142,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   corteItem: {
-    backgroundColor: "#f1f1f1",
+    // backgroundColor: "#f1f1f1",
+    borderBottomWidth: 1,
+    borderBottomColor: "#000",
     padding: 15,
     borderRadius: 8,
     marginBottom: 10,

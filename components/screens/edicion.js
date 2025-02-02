@@ -131,29 +131,42 @@ const EditarCliente = ({ route, navigation }) => {
   const handleUpdateClient = async () => {
     setLoading(true);
     try {
-      const response = await api.put(`/deudores/${clienteId}`, {
-        contract_number: contractNumber || null,
-        name: nombreCliente || null,
-        amount: amount ? parseFloat(amount) : null,
-        total_to_pay: totalToPay ? parseFloat(totalToPay) : null,
+      // Crear el payload (como ya lo tienes)
+      const payload = {
+        contract_number: contractNumber || undefined,
+        name: nombreCliente || undefined,
+        amount: amount ? parseFloat(amount) : undefined,
+        total_to_pay: totalToPay ? parseFloat(totalToPay) : undefined,
         first_payment: firstPayment ? parseFloat(firstPayment) : undefined,
         balance: balance ? parseFloat(balance) : undefined,
-        collector_id: selectedCollector || cobrador,
-        payment_type: paymentType || null,
-      });
+        collector_id: selectedCollector || undefined,
+        payment_type: paymentType || undefined,
+      };
 
-      Alert.alert(
-        "Éxito",
-        "Los datos del cliente se actualizaron correctamente."
+      // Limpiar campos undefined
+      Object.keys(payload).forEach(
+        (key) => payload[key] === undefined && delete payload[key]
       );
+
+      // Hacer la solicitud PUT
+      const response = await api.put(`/deudores/${clienteId}`, payload);
+
+      // Si todo sale bien
+      Alert.alert("Éxito", "Datos actualizados correctamente.");
       navigation.goBack();
     } catch (error) {
       console.error("Error al actualizar cliente:", error);
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ||
-          "Ocurrió un error al actualizar los datos del cliente."
-      );
+
+      // Manejar errores específicos del backend
+      const errorMessage = error.response?.data?.error || "Error desconocido";
+
+      if (errorMessage.includes("balance no puede superar")) {
+        Alert.alert("❌ Error", "⚠️ El balance supera el total a pagar");
+      } else if (errorMessage.includes("valores no pueden ser negativos")) {
+        Alert.alert("❌ Error", "🚫 Los valores no pueden ser negativos");
+      } else {
+        Alert.alert("❌ Error", errorMessage);
+      }
     } finally {
       setLoading(false);
     }
