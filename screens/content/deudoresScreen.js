@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,10 +7,11 @@ import {
   TouchableOpacity,
 } from "react-native";
 import axios from "../../api/axios";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { DiaIcono, SemanaIcono } from "../../components/global/iconos";
 import { formatearMonto } from "../../components/global/dinero";
-import BusquedaYFiltros from "../../components/global/BusquedaYFiltros"; // Importamos el nuevo componente
+import BusquedaYFiltros from "../../components/global/BusquedaYFiltros";
+import { DateTime } from "luxon";
 
 const DeudoresScreen = ({ route }) => {
   const { usuario } = route.params;
@@ -20,30 +21,35 @@ const DeudoresScreen = ({ route }) => {
   const [searchText, setSearchText] = useState("");
   const [selectedFilter, setSelectedFilter] = useState(null);
   const navigation = useNavigation();
+  const [clientesQuePagaronHoy, setClientesQuePagaronHoy] = useState(new Set());
 
-  useEffect(() => {
-    const fetchDeudores = async () => {
-      try {
-        const response = await axios.get(`/deudores/cobrador/${usuario.id}`);
-        setDeudores(response.data);
-        setFilteredDeudores(response.data);
-      } catch (error) {
-        console.error("Error al cargar los deudores:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchDeudores = async () => {
+    try {
+      const response = await axios.get(`/deudores/cobrador/${usuario.id}`);
+      setDeudores(response.data);
+      setFilteredDeudores(response.data);
 
-    fetchDeudores();
-  }, [usuario.id]);
+      await obtenerPagosDelDia();
+    } catch (error) {
+      console.error("Error al cargar los deudores:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchDeudores();
+    }, [usuario.id])
+  );
 
   // Manejo de búsqueda
   const handleSearch = (text) => {
     setSearchText(text);
     if (text.trim() === "") {
-      applyFilter(selectedFilter, deudores);
+      applyFilter(selectedFilter);
     } else {
-      const filtered = filteredDeudores.filter(
+      const filtered = deudores.filter(
         (deudor) =>
           deudor.name.toLowerCase().includes(text.toLowerCase()) ||
           String(deudor.contract_number)
@@ -54,42 +60,78 @@ const DeudoresScreen = ({ route }) => {
     }
   };
 
-  // Aplicar filtros
-  const applyFilter = (filter) => {
-    setSelectedFilter(filter);
-    if (filter === "diario") {
-      setFilteredDeudores(deudores.filter((d) => d.payment_type === "diario"));
-    } else if (filter === "semanal") {
-      setFilteredDeudores(deudores.filter((d) => d.payment_type === "semanal"));
-    } else if (filter === "liquidados") {
-      setFilteredDeudores(deudores.filter((d) => Number(d.balance) === 0));
-    } else {
-      setFilteredDeudores(deudores);
+  const obtenerPagosDelDia = async () => {
+    try {
+      const hoy = DateTime.now().setZone("America/Mexico_City").toISODate();
+
+      const response = await axios.get(`/cobros/dia?fecha=${hoy}`);
+
+      const pagosHoy = response.data.cobros;
+
+      const clientesUnicos = new Set(pagosHoy.map((pago) => pago.debtor_id));
+      setClientesQuePagaronHoy(clientesUnicos);
+    } catch (error) {
+      console.error("Error al obtener pagos del dia", error);
     }
   };
 
+  // Aplicar filtros
+  const applyFilter = (filter) => {
+    setSelectedFilter(filter);
+    let filtered = deudores;
+
+    if (filter === "diario") {
+      filtered = deudores.filter((d) => d.payment_type === "diario");
+    } else if (filter === "semanal") {
+      filtered = deudores.filter((d) => d.payment_type === "semanal");
+    } else if (filter === "liquidados") {
+      filtered = deudores.filter((d) => Number(d.balance) === 0);
+    }
+
+    // Aplica la búsqueda al conjunto filtrado
+    if (searchText.trim() !== "") {
+      filtered = filtered.filter(
+        (deudor) =>
+          deudor.name.toLowerCase().includes(searchText.toLowerCase()) ||
+          String(deudor.contract_number)
+            .toLowerCase()
+            .includes(searchText.toLowerCase())
+      );
+    }
+
+    setFilteredDeudores(filtered);
+  };
+
   const renderDeudor = ({ item }) => (
-    <TouchableOpacity
-      style={styles.deudorItem}
-      onPress={() => navigation.navigate("DetallesDeudor", { deudor: item })}
+    <View
+      style={[
+        styles.containerList,
+        Number(item.balance) === 0 && styles.liquidadoBackground, //Liquidaciones
+        clientesQuePagaronHoy.has(item.id) && styles.pagadoHoyBackground, //Pagos de hoy
+      ]}
     >
-      <View style={styles.iconContainer}>
-        {item.payment_type === "semanal" ? (
-          <SemanaIcono size={25} color={"#000000"} />
-        ) : (
-          <DiaIcono size={25} color={"#000000"} />
-        )}
-      </View>
-      <View style={styles.deudorInfo}>
-        <Text style={styles.deudorName}>{item.name}</Text>
-        <Text style={styles.deudorMonto}>
-          Total a pagar: {formatearMonto(item.total_to_pay)}
-        </Text>
-        <Text style={styles.deudorMonto}>
-          Balance: {formatearMonto(item.balance)}
-        </Text>
-      </View>
-    </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.deudorItem}
+        onPress={() => navigation.navigate("DetallesDeudor", { deudor: item })}
+      >
+        <View style={styles.iconContainer}>
+          {item.payment_type === "semanal" ? (
+            <SemanaIcono size={25} color={"#000000"} />
+          ) : (
+            <DiaIcono size={25} color={"#000000"} />
+          )}
+        </View>
+        <View style={styles.deudorInfo}>
+          <Text style={styles.deudorName}>{item.name}</Text>
+          <Text style={styles.deudorMonto}>
+            Total a pagar: {formatearMonto(item.total_to_pay)}
+          </Text>
+          <Text style={styles.deudorMonto}>
+            Balance: {formatearMonto(item.balance)}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -164,6 +206,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#888",
     marginTop: 20,
+  },
+  containerList: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  liquidadoBackground: {
+    backgroundColor: "#d4edda",
+  },
+  pagadoHoyBackground: {
+    backgroundColor: "#ffeb3b",
   },
 });
 

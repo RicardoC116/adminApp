@@ -15,7 +15,7 @@ const ControlPanelScreen = ({ navigation }) => {
         style={styles.button}
         onPress={() => navigation.navigate("AgregarUsuario")}
       >
-        <ClienteIcono size={25} color="#6c1295" />
+        <DeudoresIcono size={25} color="#6c1295" />
         <Text style={styles.buttonText}>Agregar Usuario</Text>
       </TouchableOpacity>
 
@@ -23,7 +23,7 @@ const ControlPanelScreen = ({ navigation }) => {
         style={styles.button}
         onPress={() => navigation.navigate("AgregarCliente")}
       >
-        <DeudoresIcono size={25} color="#6c1295" />
+        <ClienteIcono size={25} color="#6c1295" />
         <Text style={styles.buttonText}>Agregar Clientes</Text>
       </TouchableOpacity>
 

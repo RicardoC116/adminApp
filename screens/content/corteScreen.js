@@ -4,20 +4,24 @@ import api from "../../api/axios";
 import CorteDiario from "../../components/screens/CorteDiario";
 import CorteSemanal from "../../components/screens/CorteSemanal";
 import { formatearMonto } from "../../components/global/dinero";
+import PreCorteDiario from "../../components/screens/PreCorteDiario";
 
 const CortesScreen = ({ route }) => {
   const { usuario } = route.params;
   const [ultimoCorteDiario, setUltimoCorteDiario] = useState(null);
   const [ultimoCorteSemanal, setUltimoCorteSemanal] = useState(null);
+  const [ultimoPreCorte, setUltimoPreCorte] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const cargarDatos = useCallback(async () => {
     setLoading(true);
     try {
-      const [corteDiarioResponse, corteSemanalResponse] = await Promise.all([
-        api.get(`/cortes/diario/${usuario.id}`),
-        api.get(`/cortes/semanal/${usuario.id}`),
-      ]);
+      const [corteDiarioResponse, corteSemanalResponse, preCorteResponse] =
+        await Promise.all([
+          api.get(`/cortes/diario/${usuario.id}`),
+          api.get(`/cortes/semanal/${usuario.id}`),
+          api.get(`/cortes/preCorte/${usuario.id}`),
+        ]);
 
       setUltimoCorteDiario(
         corteDiarioResponse.data?.length
@@ -27,6 +31,11 @@ const CortesScreen = ({ route }) => {
       setUltimoCorteSemanal(
         corteSemanalResponse.data?.length
           ? corteSemanalResponse.data[corteSemanalResponse.data.length - 1]
+          : null
+      );
+      setUltimoPreCorte(
+        preCorteResponse.data?.length
+          ? preCorteResponse.data[preCorteResponse.data.length - 1]
           : null
       );
     } catch (error) {
@@ -94,19 +103,28 @@ const CortesScreen = ({ route }) => {
               }`,
               "Clientes liquidados": ultimoCorteDiario.deudores_liquidados,
               "Créditos Totales": ultimoCorteDiario.creditos_total ?? 0,
-              "No Pagos": ultimoCorteDiario.no_pagos_total ?? 0,
-              "Primeros Pagos Monto": `${
-                formatearMonto(ultimoCorteDiario.primeros_pagos_montos) ?? 0
-              }`,
+              "Créditos Totales Monto":
+                formatearMonto(ultimoCorteDiario.creditos_total_monto) ?? 0,
               "Primeros Pagos": `${
                 parseFloat(ultimoCorteDiario.primeros_pagos_total) ?? 0
               }`,
+              "Primeros Pagos Monto": `${
+                formatearMonto(ultimoCorteDiario.primeros_pagos_montos) ?? 0
+              }`,
+              "No Pagos": ultimoCorteDiario.no_pagos_total ?? 0,
               "Clientes totales": ultimoCorteDiario.deudores_totales,
             }
           : null
+        // <Text style={styles.noCorteText}>No hay cortes diarios</Text>
       )}
 
       <View style={styles.buttonsContainer}>
+        <PreCorteDiario
+          usuarioId={usuario.id}
+          ultimoPreCorte={ultimoPreCorte}
+          onCorteRealizado={cargarDatos}
+        />
+
         <CorteDiario
           usuarioId={usuario.id}
           ultimoCorteDiario={ultimoCorteDiario}
@@ -131,29 +149,38 @@ const CortesScreen = ({ route }) => {
               "Corte Fin": ultimoCorteSemanal.fecha_fin
                 ? new Date(ultimoCorteSemanal.fecha_fin).toLocaleDateString()
                 : "Sin fecha",
-              "Cobranza Total": `$${ultimoCorteSemanal.cobranza_total ?? 0}`,
-              "Liquidaciones Totales": `$${
-                ultimoCorteSemanal.liquidaciones_total ?? 0
+              "Cobranza Total": `${
+                formatearMonto(ultimoCorteSemanal.cobranza_total) ?? 0
               }`,
-              "Créditos Totales": `$${
-                ultimoCorteSemanal.creditos_total_monto ?? 0
+              "Liquidaciones Totales": `${
+                formatearMonto(ultimoCorteSemanal.liquidaciones_total) ?? 0
               }`,
-              "Primeros Pagos": `$${
-                ultimoCorteSemanal.primeros_pagos_total ?? 0
+              "Créditos Totales Monto": `${
+                formatearMonto(ultimoCorteSemanal.creditos_total_monto) ?? 0
+              }`,
+              "Primeros Pagos Monto": `${
+                formatearMonto(ultimoCorteSemanal.primeros_pagos_Monto) ?? 0
               }`,
               "Nuevos Créditos": ultimoCorteSemanal.nuevos_deudores ?? 0,
-              "Comisión de Cobros": `$${
-                ultimoCorteSemanal.comision_cobro ?? 0
+              "Comisión de Cobros": `${
+                formatearMonto(ultimoCorteSemanal.comision_cobro) ?? 0
               }`,
-              "Comisión de Ventas": `$${
-                ultimoCorteSemanal.comision_ventas ?? 0
+              "Comisión de Ventas": `${
+                formatearMonto(ultimoCorteSemanal.comision_ventas) ?? 0
               }`,
-              Gastos: `$${ultimoCorteSemanal.gastos ?? 0}`,
-              "Total de Ingresos": `$${ultimoCorteSemanal.total_ingreso ?? 0}`,
-              "Total de Egresos": `$${ultimoCorteSemanal.total_gasto ?? 0}`,
-              "Saldo Final": `$${ultimoCorteSemanal.saldo_final ?? 0}`,
+              Gastos: `${formatearMonto(ultimoCorteSemanal.gastos) ?? 0}`,
+              "Total de Ingresos": `${
+                formatearMonto(ultimoCorteSemanal.total_ingreso) ?? 0
+              }`,
+              "Total de Egresos": `${
+                formatearMonto(ultimoCorteSemanal.total_gasto) ?? 0
+              }`,
+              "Saldo Final": `${
+                formatearMonto(ultimoCorteSemanal.saldo_final) ?? 0
+              }`,
             }
           : null
+        // <Text style={styles.noCorteText}>No hay cortes semanales</Text>
       )}
     </ScrollView>
   );

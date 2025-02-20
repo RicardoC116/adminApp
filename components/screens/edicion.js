@@ -38,6 +38,8 @@ const EditarCliente = ({ route, navigation }) => {
   const [balance, setBalance] = useState("");
   const [paymentType, setPaymentType] = useState("");
   const [nombreCliente, setNombreDeudor] = useState(nombreDeudor || "");
+  const [NumeroTelefono, setNumeroDeTelefono] = useState("");
+  const [MontoSugerido, setMontoSugerido] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,10 +108,12 @@ const EditarCliente = ({ route, navigation }) => {
       const response = await api.post("/deudores", {
         contract_number: contractNumber,
         name: nombreDeudor,
-        amount: parseFloat(amount),
-        total_to_pay: parseFloat(totalToPay),
-        first_payment: parseFloat(firstPayment),
-        balance: parseFloat(balance),
+        amount: parseFloat(amount) || 0,
+        total_to_pay: parseFloat(totalToPay) || 0,
+        first_payment: parseFloat(firstPayment) || 0,
+        balance: parseFloat(balance) || 0,
+        numero_telefono: NumeroTelefono || null,
+        suggested_payment: parseFloat(MontoSugerido) || 0,
         phone_number: currentCollectorNumber,
         payment_type: paymentType,
       });
@@ -141,6 +145,10 @@ const EditarCliente = ({ route, navigation }) => {
         balance: balance ? parseFloat(balance) : undefined,
         collector_id: selectedCollector || undefined,
         payment_type: paymentType || undefined,
+        numero_telefono: NumeroTelefono || undefined,
+        suggested_payment: MontoSugerido
+          ? parseFloat(MontoSugerido)
+          : undefined,
       };
 
       // Limpiar campos undefined
@@ -264,6 +272,20 @@ const EditarCliente = ({ route, navigation }) => {
           value={firstPayment}
           onChangeText={setFirstPayment}
         />
+        <TextInput
+          style={styles.input}
+          placeholder="Numero de telefono"
+          keyboardType="numeric"
+          value={NumeroTelefono}
+          onChangeText={setNumeroDeTelefono}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Monto Sugerido"
+          keyboardType="numeric"
+          value={MontoSugerido}
+          onChangeText={setMontoSugerido}
+        />
 
         <Picker
           selectedValue={paymentType}
@@ -348,6 +370,20 @@ const EditarCliente = ({ route, navigation }) => {
           keyboardType="numeric"
           value={balance}
           onChangeText={setBalance}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Numero de telefono"
+          keyboardType="numeric"
+          value={NumeroTelefono}
+          onChangeText={setNumeroDeTelefono}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Monto Sugerido"
+          keyboardType="numeric"
+          value={MontoSugerido}
+          onChangeText={setMontoSugerido}
         />
         <Picker
           selectedValue={paymentType}

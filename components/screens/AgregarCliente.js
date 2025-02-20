@@ -5,19 +5,21 @@ import api from "../../api/axios";
 
 const AgregarDeudor = () => {
   const [name, setName] = useState("");
-  const [contract_number, setContract_number] = useState("");
+  const [contract_number, setContractNumber] = useState("");
   const [amount, setAmount] = useState("");
   const [total_to_pay, setTotalToPay] = useState("");
   const [balance, setBalance] = useState("");
   const [first_payment, setFirstPayment] = useState("");
+  const [numeroTelefono, setNumeroTelefono] = useState("");
+  const [montoSugerido, setMontoSugerido] = useState("");
   const [tipo, setTipo] = useState(null);
   const [openTipo, setOpenTipo] = useState(false);
   const [itemsTipo, setItemsTipo] = useState([
-    { label: "Diario", value: "diario" },
+    { label: "Dario", value: "diario" },
     { label: "Semanal", value: "semanal" },
   ]);
 
-  // Estados para los cobradores
+  // Estados para cobradores
   const [openCobrador, setOpenCobrador] = useState(false);
   const [cobrador, setCobrador] = useState(null);
   const [itemsCobrador, setItemsCobrador] = useState([]);
@@ -41,54 +43,70 @@ const AgregarDeudor = () => {
   }, []);
 
   const handleAddClient = () => {
-    if (name && amount && cobrador) {
-      const newClient = {
-        contract_number,
-        name,
-        amount: parseFloat(amount),
-        total_to_pay: parseFloat(total_to_pay),
-        first_payment: parseFloat(first_payment),
-        balance: parseFloat(balance),
-        phone_number: cobrador,
-        payment_type: tipo,
-      };
-
-      api
-        .post("/deudores", newClient)
-        .then((response) => {
-          console.log(response.data);
-          // Mostrar alerta de éxito
-          Alert.alert(
-            "Cliente Agregado",
-            `El cliente "${name}" fue agregado exitosamente.`,
-            [{ text: "OK" }]
-          );
-          // Reiniciar los campos del formulario
-          setName("");
-          setContract_number("");
-          setAmount("");
-          setTotalToPay("");
-          setFirstPayment("");
-          setBalance("");
-          setTipo("");
-          setCobrador(null);
-        })
-        .catch((error) => {
-          console.error("Error al agregar deudor:", error);
-          // Mostrar alerta de error
-          Alert.alert(
-            "Error",
-            "Hubo un problema al agregar el cliente. Por favor, inténtalo nuevamente.",
-            [{ text: "OK" }]
-          );
-        });
-    } else {
-      Alert.alert(
+    if (
+      !name ||
+      !contract_number ||
+      !amount ||
+      !total_to_pay ||
+      !balance ||
+      !cobrador ||
+      !tipo
+    ) {
+      return Alert.alert(
         "Campos incompletos",
-        "Por favor, completa todos los campos antes de agregar el cliente.",
+        "Todos los campos son obligatorios.",
         [{ text: "Entendido" }]
       );
     }
+
+    if (!/^\d{10}$/.test(numeroTelefono) && numeroTelefono !== "") {
+      return Alert.alert(
+        "Número inválido",
+        "El número de teléfono debe tener 10 dígitos.",
+        [{ text: "OK" }]
+      );
+    }
+
+    const newClient = {
+      contract_number,
+      name,
+      amount: parseFloat(amount) || 0,
+      total_to_pay: parseFloat(total_to_pay) || 0,
+      first_payment: parseFloat(first_payment) || 0,
+      balance: parseFloat(balance) || 0,
+      numero_telefono: numeroTelefono || null,
+      suggested_payment: parseFloat(montoSugerido) || 0,
+      phone_number: cobrador,
+      payment_type: tipo,
+    };
+
+    api
+      .post("/deudores", newClient)
+      .then(() => {
+        Alert.alert(
+          "Éxito",
+          `El cliente "${name}" fue agregado exitosamente.`,
+          [{ text: "OK" }]
+        );
+        setName("");
+        setContractNumber("");
+        setAmount("");
+        setTotalToPay("");
+        setFirstPayment("");
+        setBalance("");
+        setNumeroTelefono("");
+        setMontoSugerido("");
+        setTipo(null);
+        setCobrador(null);
+      })
+      .catch((error) => {
+        console.error("Error al agregar deudor:", error);
+        Alert.alert(
+          "Error",
+          "No se pudo agregar el cliente. Intenta nuevamente.",
+          [{ text: "OK" }]
+        );
+      });
   };
 
   return (
@@ -102,12 +120,12 @@ const AgregarDeudor = () => {
       <TextInput
         placeholder="Número de Contrato"
         value={contract_number}
-        onChangeText={setContract_number}
+        onChangeText={setContractNumber}
         style={styles.input}
         keyboardType="numeric"
       />
       <TextInput
-        placeholder="Monto"
+        placeholder="Monto Otorgado"
         value={amount}
         onChangeText={setAmount}
         keyboardType="numeric"
@@ -134,6 +152,21 @@ const AgregarDeudor = () => {
         keyboardType="numeric"
         style={styles.input}
       />
+      <TextInput
+        placeholder="Número de Teléfono"
+        value={numeroTelefono}
+        onChangeText={setNumeroTelefono}
+        keyboardType="numeric"
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Pago Sugerido"
+        value={montoSugerido}
+        onChangeText={setMontoSugerido}
+        keyboardType="numeric"
+        style={styles.input}
+      />
+
       <DropDownPicker
         open={openTipo}
         value={tipo}
@@ -145,6 +178,7 @@ const AgregarDeudor = () => {
         style={styles.dropdown}
         placeholder="Selecciona el tipo de pago"
       />
+
       <DropDownPicker
         open={openCobrador}
         value={cobrador}
@@ -152,14 +186,41 @@ const AgregarDeudor = () => {
         setOpen={setOpenCobrador}
         setValue={setCobrador}
         setItems={setItemsCobrador}
-        containerStyle={styles.dropdownContainer2}
+        containerStyle={{ marginBottom: 20 }}
         style={styles.dropdown}
-        placeholder="Selecciona a un agente"
+        placeholder="Selecciona un agente"
+        modalProps={{ animationType: "fade" }}
+        listMode="MODAL"
+        labelStyle={{
+          // fontSize: 16,
+          // fontWeight: "bold",
+          color: "#333", // Color oscuro para mejor lectura
+        }}
+        itemStyle={{
+          justifyContent: "flex-start",
+          fontSize: 50,
+          paddingVertical: 10, // Espaciado vertical para mejor separación
+        }}
+        selectedItemContainerStyle={{
+          borderBottomWidth: 1,
+          borderBottomColor: "#ccc", // Línea separadora sutil
+          backgroundColor: "#E6E6FA", // Un color suave cuando se selecciona un agente
+        }}
+        selectedItemLabelStyle={{
+          fontWeight: "bold",
+          color: "#5d1793", // Mismo color que el botón "Agregar Cliente"
+        }}
+        itemSeparatorStyle={{
+          height: 1,
+          backgroundColor: "#ccc", // Línea separadora sutil entre elementos
+          marginVertical: 5,
+        }}
       />
+
       <Button
-        title="Agregar al cliente"
+        title="Agregar Cliente"
         onPress={handleAddClient}
-        color={"#5d1793"}
+        color="#5d1793"
       />
     </View>
   );
@@ -179,7 +240,7 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     marginBottom: 10,
-    zIndex: 3,
+    zIndex: 9999,
   },
   dropdownContainer2: {
     marginBottom: 20,

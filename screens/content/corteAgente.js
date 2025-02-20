@@ -5,6 +5,7 @@ import api from "../../api/axios";
 import * as Print from "expo-print";
 
 import { ImprimirIcono } from "../../components/global/iconos";
+import { formatearMonto } from "../../components/global/dinero";
 
 const CorteAgenteScreen = ({ route }) => {
   const { usuario } = route.params;
@@ -234,7 +235,7 @@ const CorteAgenteScreen = ({ route }) => {
               )}
               {renderDato(
                 "Total Cobranza",
-                `$${corteAgente?.cobranza_total ?? 0}`
+                `${formatearMonto(corteAgente?.cobranza_total) ?? 0}`
               )}
             </View>
 
@@ -242,14 +243,20 @@ const CorteAgenteScreen = ({ route }) => {
             <View style={styles.rightColumn}>
               {renderDato(
                 "Comisión Cobros",
-                `$${corteAgente?.comision_cobro ?? 0}`
+                `${formatearMonto(corteAgente?.comision_cobro) ?? 0}`
               )}
               {renderDato(
                 "Comisión Ventas",
-                `$${corteAgente?.comision_ventas ?? 0}`
+                `${formatearMonto(corteAgente?.comision_ventas) ?? 0}`
               )}
-              {renderDato("Gastos", `$${corteAgente?.gastos ?? 0}`)}
-              {renderDato("Total Agente", `$${corteAgente?.total_agente ?? 0}`)}
+              {renderDato(
+                "Gastos",
+                `${formatearMonto(corteAgente?.gastos) ?? 0}`
+              )}
+              {renderDato(
+                "Total Agente",
+                `${formatearMonto(corteAgente?.total_agente) ?? 0}`
+              )}
             </View>
           </View>
 

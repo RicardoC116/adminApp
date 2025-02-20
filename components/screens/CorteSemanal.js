@@ -12,6 +12,7 @@ import { Calendar } from "react-native-calendars";
 import api from "../../api/axios";
 import * as Print from "expo-print";
 import { ImprimirIcono } from "../global/iconos";
+import { formatearMonto } from "../global/dinero";
 
 const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -75,44 +76,105 @@ const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
 
   const imprimirDetalles = () => {
     const contenido = `
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
-            h1 { font-size: 24px; color: #4CAF50; text-align: center; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; font-weight: bold; }
-            .signature { margin-top: 50px; text-align: center; }
-            .signature-line { margin-top: 20px; border-top: 1px solid #333; width: 50%; margin-left: auto; margin-right: auto; }
-          </style>
-        </head>
-        <body>
-          <h1>Detalles del Corte Semanal</h1>
-          ${
-            ultimoCorteSemanal
-              ? `
-          <table>
-            ${Object.entries(ultimoCorteSemanal)
-              .map(
-                ([key, value]) => `
-              <tr>
-                <th>${key.replace(/_/g, " ")}</th>
-                <td>${value}</td>
-              </tr>
-            `
-              )
-              .join("")}
-          </table>`
-              : "<p>No hay datos disponibles para el corte semanal.</p>"
-          }
-          <div class="signature">
-            <p>Firma:</p>
-            <div class="signature-line"></div>
-          </div>
-        </body>
-      </html>
-    `;
+    <html>
+       <head>
+         <style>
+           body {
+             font-family: Arial, sans-serif;
+             padding: 20px;
+             color: #000;
+           }
+           h1, h2 {
+             color: #444;
+             text-align: center;
+           }
+           table {
+             width: 100%;
+             border-collapse: collapse;
+             margin: 20px 0;
+           }
+           th, td {
+             border: 1px solid #ddd;
+             padding: 10px;
+             text-align: left;
+           }
+           th {
+             background-color: #f4f4f4;
+           }
+           .info-section {
+             margin-bottom: 20px;
+           }
+         </style>
+       </head>
+       <body>
+         <h1>Detalles del Corte Semanal</h1>
+         <h2>Información General</h2>
+   
+         <div class="info-section">
+           <table>
+             <tbody>
+
+       <tr><th>Fecha Inicio</th><td>${new Date(
+         ultimoCorteSemanal.fecha_inicio
+       ).toLocaleDateString()}</td></tr>
+       <tr><th>Fecha Fin</th><td>${new Date(
+         ultimoCorteSemanal.fecha_fin
+       ).toLocaleDateString()}</td></tr>
+       <tr><th>Clientes Cobrados</th><td>${
+         ultimoCorteSemanal.deudores_cobrados
+       }</td></tr>
+       <tr><th>Cobranza Total</th><td>${formatearMonto(
+         ultimoCorteSemanal.cobranza_total
+       )}</td></tr>
+       <tr><th>Nuevos Clientes</th><td>${
+         ultimoCorteSemanal.nuevos_deudores
+       }</td></tr>
+       <tr><th>Créditos Total Monto</th><td>${formatearMonto(
+         ultimoCorteSemanal.creditos_total_monto
+       )}</td></tr>
+       <tr><th>Primeros Pagos Monto</th><td>${formatearMonto(
+         ultimoCorteSemanal.primeros_pagos_Monto
+       )}</td></tr>
+       <tr><th>Liquidaciones Total Monto</th><td>${formatearMonto(
+         ultimoCorteSemanal.liquidaciones_total
+       )}</td></tr>
+       <tr><th>Créditos Total</th><td>${
+         ultimoCorteSemanal.creditos_total
+       }</td></tr>
+       <tr><th>Primeros Pagos Total</th><td>${parseFloat(
+         ultimoCorteSemanal.primeros_pagos_total
+       )}</td></tr>
+       <tr><th>No Pagos Total</th><td>${
+         ultimoCorteSemanal.no_pagos_total
+       }</td></tr>
+       <tr><th>Comisión por Cobro</th><td>${formatearMonto(
+         ultimoCorteSemanal.comision_cobro
+       )}</td></tr>
+       <tr><th>Comisión Ventas</th><td>${formatearMonto(
+         ultimoCorteSemanal.comision_ventas
+       )}</td></tr>
+       <tr><th>Gastos</th><td>${formatearMonto(
+         ultimoCorteSemanal.gastos
+       )}</td></tr>
+       <tr><th>Saldo Final</th><td>${formatearMonto(
+         ultimoCorteSemanal.saldo_final
+       )}</td></tr>
+       <tr><th>Total Ingreso</th><td>${formatearMonto(
+         ultimoCorteSemanal.total_ingreso
+       )}</td></tr>
+       <tr><th>Total Gastos</th><td>${formatearMonto(
+         ultimoCorteSemanal.total_gasto
+       )}</td></tr>
+       <tr><th>Total Agente</th><td>${formatearMonto(
+         ultimoCorteSemanal.total_agente
+       )}</td></tr>
+
+             </tbody>
+           </table>
+         </div>
+       </body>
+     </html>
+   `;
 
     Print.printAsync({
       html: contenido,

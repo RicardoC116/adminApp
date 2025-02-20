@@ -1,5 +1,6 @@
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Icon from "react-native-vector-icons/FontAwesome"; // Importa el icono
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -52,17 +53,16 @@ export const RenovacionIcono = ({ focused, color, size }) => {
 
 export const DiaIcono = ({ focused, color, size }) => {
   return (
-    <MaterialCommunityIcons name="calendar-outline" size={size} color={color} />
+    <FontAwesome name="square-o" size={size} color={color} />
+    // <MaterialCommunityIcons name="calendar-outline" size={size} color={color} />
   );
 };
 
 // exportar icono de calendarWeek de fontAwasome5
 export const SemanaIcono = ({ focused, color, size }) => {
-  return (
-    <MaterialCommunityIcons
-      name="calendar-range-outline"
-      size={size}
-      color={color}
-    />
-  );
+  return <FontAwesome5 name="circle" size={size} color={color} />;
+};
+
+export const PreCorteIcono = ({ focused, color, size }) => {
+  return <AntDesign name="eyeo" size={size} color={color} />;
 };

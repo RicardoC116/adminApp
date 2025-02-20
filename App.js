@@ -21,6 +21,7 @@ import CortesAgenteScreen from "./screens/content/corteAgente";
 import VerClientesScreen from "./components/screens/VerClientes";
 import DetallesCliente from "./screens/content/DetallesClientes";
 import EditarCliente from "./components/screens/edicion";
+import PreCortesScreen from "./components/screens/PreCortes";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -101,6 +102,15 @@ const PrincipalStack = () => {
           headerTitle: () => (
             <Text style={styles.headerTitle}>Cortes del agente</Text>
           ),
+        }}
+      />
+
+      {/* precortesScreen */}
+      <Stack.Screen
+        name="Precortes"
+        component={PreCortesScreen}
+        options={{
+          headerTitle: () => <Text style={styles.headerTitle}>Precortes</Text>,
         }}
       />
     </Stack.Navigator>

@@ -30,12 +30,11 @@ const CorteDiario = ({
   };
 
   const handleCorteDiario = async () => {
-    // Obtener la fecha local de México
     const fechaHoyLocal = DateTime.now()
       .setZone("America/Mexico_City")
       .toFormat("yyyy-MM-dd");
 
-    // Validar si ya se hizo un corte en el día actual
+    // Verificar si ya se realizó un corte hoy
     if (
       ultimoCorteDiario &&
       DateTime.fromISO(ultimoCorteDiario.fecha).toFormat("yyyy-MM-dd") ===
@@ -51,13 +50,25 @@ const CorteDiario = ({
       });
 
       Alert.alert("Éxito", "Corte diario realizado exitosamente.");
-
       if (onCorteRealizado) onCorteRealizado();
     } catch (error) {
       console.error("Error al realizar el corte diario:", error);
-      Alert.alert("Error", "No se pudo realizar el corte diario.");
+
+      // Capturar mensaje de error específico del backend
+      if (error.response) {
+        const mensajeError = error.response.data.error;
+
+        if (mensajeError.includes("No se puede generar un corte diario")) {
+          Alert.alert("Error", "No hay pre-cortes registrados.");
+        } else {
+          Alert.alert("Error", mensajeError || "Error al realizar el corte.");
+        }
+      } else {
+        Alert.alert("Error", "No se pudo realizar el corte diario.");
+      }
     }
   };
+
   const imprimirDetalles = () => {
     const contenido = `
       <html>
@@ -73,7 +84,6 @@ const CorteDiario = ({
               flex-direction: column;
               align-items: stretch;
               justify-content: center;
-            
             }
             .encabezado {
               display: flex;
@@ -86,7 +96,6 @@ const CorteDiario = ({
               border-collapse: collapse;
               margin-bottom: 20px;
               margin-top: 10px;
-
             }
             .tabla td {
               border: 1px solid #ddd;
@@ -184,11 +193,8 @@ const CorteDiario = ({
                   <span>Firma del Agente</span>
                 </div>
               </div>
-
-              <br>
-              <br>
-              <br>
-              </div>
+              <br><br><br>
+            </div>
           `
             )
             .join("")}
@@ -196,9 +202,7 @@ const CorteDiario = ({
       </html>
     `;
 
-    Print.printAsync({
-      html: contenido,
-    });
+    Print.printAsync({ html: contenido });
   };
 
   return (
@@ -235,8 +239,6 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
     fontSize: 15,
-    alignContent: "center",
-    alignItems: "center",
     alignSelf: "center",
   },
 });

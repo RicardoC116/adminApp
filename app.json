@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Admin-ST",
+    "name": "Admin-VC",
     "slug": "admin-app",
-    "version": "1.0.0",
+    "version": "1.2.2",
     "orientation": "portrait",
     "icon": "./assets/icon1.png",
     "userInterfaceStyle": "light",

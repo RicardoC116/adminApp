@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "../../api/axios";
 import React, { useCallback, useState } from "react";
 import {
@@ -10,13 +11,15 @@ import {
 } from "react-native";
 import InputWithIcon from "../global/inputWithIcon";
 import { ClientesIcono, DiaIcono, SemanaIcono } from "../global/iconos";
+import { DateTime } from "luxon";
 
 const VerClientesScreen = ({ navigation }) => {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [filteredUsuarios, setFilteredUsuarios] = useState([]);
-  const [selectedFilter, setSelectedFilter] = useState(null); // Estado para el filtro seleccionado
+  const [selectedFilter, setSelectedFilter] = useState(null);
+  const [clientesQuePagaronHoy, setClientesQuePagaronHoy] = useState(new Set());
 
   useFocusEffect(
     useCallback(() => {
@@ -27,6 +30,8 @@ const VerClientesScreen = ({ navigation }) => {
           const clientesInvertidos = response.data.reverse();
           setClientes(clientesInvertidos);
           setFilteredUsuarios(clientesInvertidos);
+
+          await obtenerPagosDelDia();
         } catch (error) {
           console.error(error);
         } finally {
@@ -37,13 +42,46 @@ const VerClientesScreen = ({ navigation }) => {
     }, [])
   );
 
+  const obtenerPagosDelDia = async () => {
+    try {
+      // const hoy = new Date().toISOString().split("T")[0];
+      const hoy = DateTime.now().setZone("America/Mexico_City").toISODate();
+
+      // Verificar si hay datos en AsyncStorage
+      const pagosGuardados = await AsyncStorage.getItem("pagosHoy");
+      if (pagosGuardados) {
+        const { fecha, pagos } = JSON.parse(pagosGuardados);
+        if (fecha === hoy) {
+          setClientesQuePagaronHoy(new Set(pagos));
+          return;
+        }
+      }
+
+      // Si no hay datos guardados o la fecha es diferente, obtener desde la API
+      const response = await axios.get(`/cobros/dia?fecha=${hoy}`);
+      const pagosHoy = response.data.cobros.map((pago) => pago.debtor_id);
+
+      // const pagosHoy = response.data.map((pago) => pago.debtor_id);
+
+      // Guardar en AsyncStorage
+      await AsyncStorage.setItem(
+        "pagosHoy",
+        JSON.stringify({ fecha: hoy, pagos: pagosHoy })
+      );
+
+      setClientesQuePagaronHoy(new Set(pagosHoy));
+    } catch (error) {
+      console.error("Error al obtener pagos del día", error);
+    }
+  };
+
   // Manejar la búsqueda
   const handleSearch = (text) => {
     setSearchText(text);
     if (text.trim() === "") {
-      applyFilter(selectedFilter, clientes);
+      applyFilter(selectedFilter, clientes); // Restablece la lista con el filtro seleccionado
     } else {
-      const filtered = filteredUsuarios.filter(
+      const filtered = clientes.filter(
         (cliente) =>
           cliente.name.toLowerCase().includes(text.toLowerCase()) ||
           String(cliente.contract_number)
@@ -81,7 +119,8 @@ const VerClientesScreen = ({ navigation }) => {
     <View
       style={[
         styles.containerList,
-        Number(item.balance) === 0 && styles.liquidadoBackground,
+        Number(item.balance) === 0 && styles.liquidadoBackground, //Liquidaciones
+        clientesQuePagaronHoy.has(item.id) && styles.pagadoHoyBackground, //Pagos de hoy
       ]}
     >
       <TouchableOpacity
@@ -99,7 +138,6 @@ const VerClientesScreen = ({ navigation }) => {
       </TouchableOpacity>
     </View>
   );
-  
 
   if (loading) {
     return (
@@ -301,6 +339,9 @@ const styles = StyleSheet.create({
   },
   liquidadoBackground: {
     backgroundColor: "#d4edda",
+  },
+  pagadoHoyBackground: {
+    backgroundColor: "#ffeb3b",
   },
 });
 

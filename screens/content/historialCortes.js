@@ -9,6 +9,7 @@ import {
 import axios from "../../api/axios"; // Ruta hacia tu instancia de axios
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { ActivityIndicator } from "react-native";
+import { formatearMonto } from "../../components/global/dinero";
 
 const HistorialCortesScreen = ({ route }) => {
   const { usuario } = route.params; // Recibimos el cobrador.
@@ -57,8 +58,13 @@ const HistorialCortesScreen = ({ route }) => {
       style={styles.corteItem}
       onPress={() => handleCortePress(corte, "diario")}
     >
-      <Text style={styles.corteFecha}>Fecha: {corte.fecha}</Text>
-      <Text style={styles.corteMonto}>Monto: ${corte.cobranza_total}</Text>
+      <Text style={styles.corteFecha}>
+        Fecha: {new Date(corte.fecha).toLocaleDateString("es-MX")}
+      </Text>
+
+      <Text style={styles.corteMonto}>
+        Monto: {formatearMonto(corte.cobranza_total)}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -82,8 +88,8 @@ const HistorialCortesScreen = ({ route }) => {
           </Text>
         </View>
       </View>
-      <Text style={styles.corteFecha}>Monto: $</Text>
-      <Text>{corte.cobranza_total}</Text>
+      <Text style={styles.corteFecha}>Monto: </Text>
+      <Text>{formatearMonto(corte.cobranza_total)}</Text>
     </TouchableOpacity>
   );
 
