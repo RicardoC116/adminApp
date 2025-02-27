@@ -23,54 +23,60 @@ const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
   const [gastos, setGastos] = useState("");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isCalendarOpen2, setIsCalendarOpen2] = useState(false);
+  const [preCorte, setPreCorte] = useState(null);
 
-  const handleCorteSemanal = async () => {
-    if (
-      !fechaInicio ||
-      !fechaFin ||
-      !comisionCobro ||
-      !comisionVentas ||
-      !gastos
-    ) {
+  const handlePreCorteSemanal = async () => {
+    if (!fechaInicio || !fechaFin) {
       Alert.alert("Error", "Todos los campos son obligatorios.");
       return;
     }
 
     try {
-      const response = await api.post("/cortes/semanal", {
+      const response = await api.post("/cortes/semanal/preCorte", {
         collector_id: usuarioId,
         fecha_inicio: fechaInicio,
         fecha_fin: fechaFin,
-        comision_cobro: comisionCobro,
-        comision_ventas: comisionVentas,
-        gastos,
       });
 
-      // Si todo es exitoso, mostramos una alerta de éxito
-      Alert.alert("Éxito", "Corte semanal realizado exitosamente.");
-      onCorteRealizado();
-      setModalVisible(false); // Cerrar el modal después de guardar
+      setPreCorte(response.data.data);
+      setModalVisible(false); // Cerrar el modal de entrada de datos
     } catch (error) {
-      console.error("Error al realizar el corte semanal:", error);
+      console.error("Error al realizar el pre-corte semanal:", error);
+      Alert.alert("Error", "No se pudo realizar el pre-corte semanal.");
+    }
+  };
 
-      // Comprobamos si el error es un 409 (rango de fechas ya cubierto)
-      if (error.response && error.response.status === 409) {
-        const errorMessage = error.response.data.error;
-        const rangoExistente = error.response.data.rangoExistente;
-        Alert.alert(
-          "Error",
-          `${errorMessage}\nFecha inicio: ${rangoExistente.fecha_inicio}\nFecha fin: ${rangoExistente.fecha_fin}`
-        );
-      } else if (error.response && error.response.status === 404) {
-        Alert.alert(
-          "Error",
-          error.response.data.error ||
-            "No se encontraron cortes diarios en este rango."
-        );
-      } else {
-        // Si es otro tipo de error, mostramos un mensaje genérico
-        Alert.alert("Error", "No se pudo realizar el corte semanal.");
+  const handleConfirmarCorteSemanal = async () => {
+    try {
+      const response = await api.post(
+        `/cortes/semanal/preCorte/${preCorte.id}`,
+        {
+          comision_cobro: comisionCobro, // Enviar en snake_case
+          comision_ventas: comisionVentas,
+          gastos: gastos,
+        } // Enviar datos al backend
+      );
+
+      Alert.alert("Éxito", "Corte semanal confirmado exitosamente.");
+      onCorteRealizado();
+      setPreCorte(null); // Limpiar el pre-corte después de confirmar
+    } catch (error) {
+      console.error("Error al confirmar el corte semanal:", error);
+      Alert.alert("Error", "No se pudo confirmar el corte semanal.");
+    }
+  };
+
+  const handleCancelarPreCorte = async () => {
+    try {
+      if (!preCorte?.id) {
+        Alert.alert("Error", "No se pudo encontrar el pre-corte.");
+        return;
       }
+      await api.delete(`/cortes/semanal/preCorte/${preCorte.id}`);
+      setPreCorte(null); // Limpiar el pre-corte después de cancelar
+    } catch (error) {
+      console.error("Error al cancelar el pre-corte semanal:", error);
+      Alert.alert("Error", "No se pudo cancelar el pre-corte semanal.");
     }
   };
 
@@ -206,9 +212,9 @@ const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Crear Corte Semanal</Text>
+            <Text style={styles.modalTitle}>Crear Pre-Corte Semanal</Text>
 
-            {/* Mostrar la fecha seleccionada en un "input" */}
+            {/* Campos para el pre-corte */}
             <TouchableOpacity
               onPress={() => setIsCalendarOpen(!isCalendarOpen)}
             >
@@ -218,12 +224,11 @@ const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
                   : "Selecciona la Fecha de Inicio"}
               </Text>
             </TouchableOpacity>
-            {/* Mostrar el calendario solo cuando el estado isCalendarOpen sea true */}
             {isCalendarOpen && (
               <Calendar
                 onDayPress={(day) => {
                   setFechaInicio(day.dateString);
-                  setIsCalendarOpen(false); // Cerrar el calendario después de seleccionar la fecha
+                  setIsCalendarOpen(false);
                 }}
                 markedDates={{
                   [fechaInicio]: { selected: true, selectedColor: "green" },
@@ -241,12 +246,11 @@ const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
                   : "Selecciona la Fecha de Fin"}
               </Text>
             </TouchableOpacity>
-            {/* Mostrar el calendario solo cuando el estado isCalendarOpen sea true */}
             {isCalendarOpen2 && (
               <Calendar
                 onDayPress={(day) => {
                   setFechaFin(day.dateString);
-                  setIsCalendarOpen2(false); // Cerrar el calendario después de seleccionar la fecha
+                  setIsCalendarOpen2(false);
                 }}
                 markedDates={{
                   [fechaFin]: { selected: true, selectedColor: "green" },
@@ -254,35 +258,12 @@ const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
                 monthFormat={"yyyy MM"}
               />
             )}
-
-            <TextInput
-              placeholder="Comisión de Cobro"
-              style={styles.input}
-              keyboardType="numeric"
-              value={comisionCobro}
-              onChangeText={setComisionCobro}
-            />
-            <TextInput
-              placeholder="Comisión de Ventas"
-              style={styles.input}
-              keyboardType="numeric"
-              value={comisionVentas}
-              onChangeText={setComisionVentas}
-            />
-            <TextInput
-              placeholder="Gastos"
-              style={styles.input}
-              keyboardType="numeric"
-              value={gastos}
-              onChangeText={setGastos}
-            />
-
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.confirmButton}
-                onPress={handleCorteSemanal}
+                onPress={handlePreCorteSemanal}
               >
-                <Text style={styles.confirmButtonText}>Crear Corte</Text>
+                <Text style={styles.confirmButtonText}>Crear Pre-Corte</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -294,6 +275,67 @@ const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
           </View>
         </View>
       </Modal>
+
+      {/* Modal para confirmar el pre-corte */}
+      {preCorte && (
+        // CorteSemanal.js (modal de confirmación)
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={!!preCorte}
+          onRequestClose={() => setPreCorte(null)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Confirmar Corte Semanal</Text>
+
+              {/* Mostrar datos del pre-corte */}
+              <Text>
+                Cobranza Total: {formatearMonto(preCorte.cobranza_total)}
+              </Text>
+              <Text>Creditos Realizado: {preCorte.creditos_total}</Text>
+
+              {/* Campos para comisiones y gastos */}
+              <TextInput
+                placeholder="Comisión de Cobro"
+                style={styles.input}
+                keyboardType="numeric"
+                value={comisionCobro}
+                onChangeText={setComisionCobro}
+              />
+              <TextInput
+                placeholder="Comisión de Ventas"
+                style={styles.input}
+                keyboardType="numeric"
+                value={comisionVentas}
+                onChangeText={setComisionVentas}
+              />
+              <TextInput
+                placeholder="Gastos"
+                style={styles.input}
+                keyboardType="numeric"
+                value={gastos}
+                onChangeText={setGastos}
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={handleConfirmarCorteSemanal} // Enviar comisiones y gastos aquí
+                >
+                  <Text style={styles.confirmButtonText}>Confirmar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={handleCancelarPreCorte}
+                >
+                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };
@@ -309,16 +351,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
-  },
-  imprimir: {
-    backgroundColor: "#fff",
-    padding: 5,
-  },
-  imprimirTexto: {
-    color: "#000",
-    fontWeight: "bold",
-    fontSize: 15,
-    alignSelf: "center",
   },
   modalContainer: {
     flex: 1,

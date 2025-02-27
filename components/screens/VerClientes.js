@@ -200,7 +200,7 @@ const VerClientesScreen = ({ navigation }) => {
                     : styles.filterText
                 }
               >
-                Diario
+                Semanal
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -218,7 +218,7 @@ const VerClientesScreen = ({ navigation }) => {
                     : styles.filterText
                 }
               >
-                Semanal
+                Mensual
               </Text>
             </TouchableOpacity>
             <TouchableOpacity

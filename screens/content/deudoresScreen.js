@@ -102,6 +102,8 @@ const DeudoresScreen = ({ route }) => {
     setFilteredDeudores(filtered);
   };
 
+  const deudoresActivos = deudores.filter((d) => Number(d.balance) > 0);
+
   const renderDeudor = ({ item }) => (
     <View
       style={[
@@ -145,6 +147,10 @@ const DeudoresScreen = ({ route }) => {
         selectedFilter={selectedFilter}
         onFilter={applyFilter}
       />
+
+      <Text style={styles.text}>
+        Clients Activos Totales: {deudoresActivos.length}
+      </Text>
 
       {loading ? (
         <Text style={styles.loading}>Cargando deudores...</Text>
@@ -216,6 +222,15 @@ const styles = StyleSheet.create({
   },
   pagadoHoyBackground: {
     backgroundColor: "#ffeb3b",
+  },
+  text: {
+    padding: 5,
+    textAlign: "end",
+    marginRight: 45,
+    marginTop: 10,
+    marginBottom: 10,
+    fontSize: 16,
+    fontWeight: "500",
   },
 });
 

@@ -15,8 +15,8 @@ const AgregarDeudor = () => {
   const [tipo, setTipo] = useState(null);
   const [openTipo, setOpenTipo] = useState(false);
   const [itemsTipo, setItemsTipo] = useState([
-    { label: "Dario", value: "diario" },
-    { label: "Semanal", value: "semanal" },
+    { label: "Semanal", value: "diario" },
+    { label: "Mensual", value: "semanal" },
   ]);
 
   // Estados para cobradores

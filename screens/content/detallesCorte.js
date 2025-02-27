@@ -281,7 +281,7 @@ export default function DetallesCorte({ route }) {
               value={`${formatearMonto(corte.total_ingreso)}`}
             />
             <Detail
-              label="Total Gastos:"
+              label="Total Egresos:"
               value={`${formatearMonto(corte.total_gasto)}`}
             />
             <Detail
