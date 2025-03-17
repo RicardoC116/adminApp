@@ -86,7 +86,7 @@ const DetallesCliente = ({ route, navigation }) => {
   const cargarHistorialPagos = async () => {
     try {
       const response = await axios.get(`/cobros/deudor/${clienteId}`);
-      setCobros(response.data);
+      setCobros(response.data.reverse());
     } catch (error) {
       console.error("Error al cargar el historial de pagos:", error);
     }
@@ -159,8 +159,13 @@ const DetallesCliente = ({ route, navigation }) => {
   );
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Detalles de {detalles.name}</Text>
-
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate("clientesDetallados", { deudor: detalles })
+        }
+      >
+        <Text style={styles.title}>Detalles de {detalles.name}</Text>
+      </TouchableOpacity>
       <View style={styles.infoRow}>
         <View style={styles.infoColumn}>
           <Text style={styles.detailText}>

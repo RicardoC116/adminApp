@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { View, TextInput, Button, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  ScrollView,
+  Text,
+} from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import api from "../../api/axios";
+import { TouchableOpacity } from "react-native";
 
 const AgregarDeudor = () => {
   const [name, setName] = useState("");
@@ -15,9 +24,13 @@ const AgregarDeudor = () => {
   const [tipo, setTipo] = useState(null);
   const [openTipo, setOpenTipo] = useState(false);
   const [itemsTipo, setItemsTipo] = useState([
-    { label: "Semanal", value: "diario" },
-    { label: "Mensual", value: "semanal" },
+    { label: "Diario", value: "diario" },
+    { label: "Semanal", value: "semanal" },
   ]);
+  const [aval, setAval] = useState("");
+  const [avalTelefono, setAvalTelefono] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [direccionAval, setDireccionAval] = useState("");
 
   // Estados para cobradores
   const [openCobrador, setOpenCobrador] = useState(false);
@@ -48,7 +61,7 @@ const AgregarDeudor = () => {
       !contract_number ||
       !amount ||
       !total_to_pay ||
-      !balance ||
+      // !balance ||
       !cobrador ||
       !tipo
     ) {
@@ -73,11 +86,15 @@ const AgregarDeudor = () => {
       amount: parseFloat(amount) || 0,
       total_to_pay: parseFloat(total_to_pay) || 0,
       first_payment: parseFloat(first_payment) || 0,
-      balance: parseFloat(balance) || 0,
+      // balance: parseFloat(balance) || 0,
       numero_telefono: numeroTelefono || null,
       suggested_payment: parseFloat(montoSugerido) || 0,
       phone_number: cobrador,
       payment_type: tipo,
+      aval,
+      aval_phone: avalTelefono,
+      direccion: direccion,
+      aval_direccion: direccionAval,
     };
 
     api
@@ -93,9 +110,13 @@ const AgregarDeudor = () => {
         setAmount("");
         setTotalToPay("");
         setFirstPayment("");
-        setBalance("");
+        // setBalance("");
         setNumeroTelefono("");
         setMontoSugerido("");
+        setAval("");
+        setAvalTelefono("");
+        setDireccion("");
+        setDireccionAval("");
         setTipo(null);
         setCobrador(null);
       })
@@ -110,62 +131,144 @@ const AgregarDeudor = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        placeholder="Nombre del cliente"
-        value={name}
-        onChangeText={setName}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Número de Contrato"
-        value={contract_number}
-        onChangeText={setContractNumber}
-        style={styles.input}
-        keyboardType="numeric"
-      />
-      <TextInput
-        placeholder="Monto Otorgado"
-        value={amount}
-        onChangeText={setAmount}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Total a Pagar"
-        value={total_to_pay}
-        onChangeText={setTotalToPay}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Balance"
-        value={balance}
-        onChangeText={setBalance}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Primer Pago"
-        value={first_payment}
-        onChangeText={setFirstPayment}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Número de Teléfono"
-        value={numeroTelefono}
-        onChangeText={setNumeroTelefono}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Pago Sugerido"
-        value={montoSugerido}
-        onChangeText={setMontoSugerido}
-        keyboardType="numeric"
-        style={styles.input}
-      />
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Número de Contrato */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Número de Contrato</Text>
+        <TextInput
+          value={contract_number}
+          onChangeText={setContractNumber}
+          style={styles.input}
+          keyboardType="numeric"
+          // placeholder="Ej. 123456"
+        />
+      </View>
+      {/* Nombre del Cliente */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Nombre del Cliente</Text>
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          style={styles.input}
+          // placeholder="Ej. Juan Pérez"
+        />
+      </View>
+
+      {/* Dirección */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Dirección</Text>
+        <TextInput
+          value={direccion}
+          onChangeText={setDireccion}
+          style={styles.input}
+          // placeholder="Ej. Calle 123"
+        />
+      </View>
+
+      {/* Monto Otorgado */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Monto Otorgado</Text>
+        <TextInput
+          value={amount}
+          onChangeText={setAmount}
+          keyboardType="numeric"
+          style={styles.input}
+          // placeholder="Ej. 1000"
+        />
+      </View>
+
+      {/* Total a Pagar */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Total a Pagar</Text>
+        <TextInput
+          value={total_to_pay}
+          onChangeText={setTotalToPay}
+          keyboardType="numeric"
+          style={styles.input}
+          // placeholder="Ej. 1200"
+        />
+      </View>
+
+      {/* Balance */}
+      {/* <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Balance</Text>
+        <TextInput
+          value={balance}
+          onChangeText={setBalance}
+          keyboardType="numeric"
+          style={styles.input}
+          // placeholder="Ej. 200"
+        />
+      </View> */}
+
+      {/* Primer Pago */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Primer Pago</Text>
+        <TextInput
+          value={first_payment}
+          onChangeText={setFirstPayment}
+          keyboardType="numeric"
+          style={styles.input}
+          // placeholder="Ej. 100"
+        />
+      </View>
+
+      {/* Número de Teléfono */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Número de Teléfono</Text>
+        <TextInput
+          value={numeroTelefono}
+          onChangeText={setNumeroTelefono}
+          keyboardType="numeric"
+          style={styles.input}
+          // placeholder="Ej. 5551234567"
+        />
+      </View>
+
+      {/* Pago Sugerido */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Pago Sugerido</Text>
+        <TextInput
+          value={montoSugerido}
+          onChangeText={setMontoSugerido}
+          keyboardType="numeric"
+          style={styles.input}
+          // placeholder="Ej. 300"
+        />
+      </View>
+
+      {/* Aval */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Nombre del Aval</Text>
+        <TextInput
+          value={aval}
+          onChangeText={setAval}
+          style={styles.input}
+          // placeholder="Ej. María López"
+        />
+      </View>
+
+      {/* Teléfono del Aval */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Teléfono del Aval</Text>
+        <TextInput
+          value={avalTelefono}
+          onChangeText={setAvalTelefono}
+          style={styles.input}
+          // placeholder="Ej. 5559876543"
+        />
+      </View>
+
+      {/* Direccion del aval */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>° Dirección del Aval</Text>
+        <TextInput
+          value={direccionAval}
+          onChangeText={setDireccionAval}
+          style={styles.input}
+          // placeholder="Ej. Calle 123"
+        />
+      </View>
 
       <DropDownPicker
         open={openTipo}
@@ -177,6 +280,29 @@ const AgregarDeudor = () => {
         containerStyle={styles.dropdownContainer}
         style={styles.dropdown}
         placeholder="Selecciona el tipo de pago"
+        modalProps={{ animationType: "fade" }}
+        listMode="SCROLLVIEW"
+        labelStyle={{
+          color: "#333",
+        }}
+        itemStyle={{
+          justifyContent: "flex-start",
+          paddingVertical: 10,
+        }}
+        selectedItemContainerStyle={{
+          borderBottomWidth: 1,
+          borderBottomColor: "#ccc",
+          backgroundColor: "#E6E6FA",
+        }}
+        selectedItemLabelStyle={{
+          fontWeight: "bold",
+          color: "#5d1793",
+        }}
+        itemSeparatorStyle={{
+          height: 1,
+          backgroundColor: "#ccc",
+          marginVertical: 5,
+        }}
       />
 
       <DropDownPicker
@@ -217,20 +343,28 @@ const AgregarDeudor = () => {
         }}
       />
 
-      <Button
-        title="Agregar Cliente"
-        onPress={handleAddClient}
-        color="#5d1793"
-      />
-    </View>
+      {/* Botón Personalizado */}
+      <TouchableOpacity style={styles.button} onPress={handleAddClient}>
+        <Text style={styles.buttonText}>Agregar Cliente</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     padding: 20,
     backgroundColor: "#fff",
+  },
+  inputContainer: {
+    marginBottom: 5,
+  },
+  label: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#010101",
+    marginBottom: 5,
   },
   input: {
     borderWidth: 1,
@@ -249,6 +383,18 @@ const styles = StyleSheet.create({
   dropdown: {
     borderColor: "#ccc",
     backgroundColor: "#fafafa",
+  },
+  button: {
+    backgroundColor: "#5d1793",
+    borderRadius: 8,
+    padding: 15,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

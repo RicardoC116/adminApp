@@ -293,8 +293,8 @@ const EditarCliente = ({ route, navigation }) => {
           style={styles.picker}
         >
           <Picker.Item label="Selecciona el Tipo de Pago" value="" />
-          <Picker.Item label="Diario" value="diario" />
-          <Picker.Item label="Semanal" value="semanal" />
+          <Picker.Item label="Semanal" value="diario" />
+          <Picker.Item label="Mensual" value="semanal" />
         </Picker>
 
         <TouchableOpacity

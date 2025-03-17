@@ -22,6 +22,7 @@ import VerClientesScreen from "./components/screens/VerClientes";
 import DetallesCliente from "./screens/content/DetallesClientes";
 import EditarCliente from "./components/screens/edicion";
 import PreCortesScreen from "./components/screens/PreCortes";
+import ClientesDetallados from "./components/screens/clientesDetallados";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -64,6 +65,18 @@ const PrincipalStack = () => {
           ),
         }}
       />
+
+      {/* DetallesClientes */}
+      <Stack.Screen
+        name="clientesDetallados"
+        component={ClientesDetallados}
+        options={{
+          headerTitle: () => (
+            <Text style={styles.headerTitle}>Detalles de cliente</Text>
+          ),
+        }}
+      />
+
       {/* DetallesDeudores */}
       <Stack.Screen
         name="DetallesDeudor"

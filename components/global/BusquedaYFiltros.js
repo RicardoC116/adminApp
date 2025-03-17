@@ -53,7 +53,7 @@ const BusquedaYFiltros = ({
                 : styles.filterText
             }
           >
-            Semanal
+            Diario
           </Text>
         </TouchableOpacity>
 
@@ -72,7 +72,7 @@ const BusquedaYFiltros = ({
                 : styles.filterText
             }
           >
-            Mensual
+            Semanal
           </Text>
         </TouchableOpacity>
 

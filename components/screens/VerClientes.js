@@ -47,29 +47,12 @@ const VerClientesScreen = ({ navigation }) => {
       // const hoy = new Date().toISOString().split("T")[0];
       const hoy = DateTime.now().setZone("America/Mexico_City").toISODate();
 
-      // Verificar si hay datos en AsyncStorage
-      const pagosGuardados = await AsyncStorage.getItem("pagosHoy");
-      if (pagosGuardados) {
-        const { fecha, pagos } = JSON.parse(pagosGuardados);
-        if (fecha === hoy) {
-          setClientesQuePagaronHoy(new Set(pagos));
-          return;
-        }
-      }
-
-      // Si no hay datos guardados o la fecha es diferente, obtener desde la API
       const response = await axios.get(`/cobros/dia?fecha=${hoy}`);
-      const pagosHoy = response.data.cobros.map((pago) => pago.debtor_id);
 
-      // const pagosHoy = response.data.map((pago) => pago.debtor_id);
+      const pagosHoy = response.data.cobros;
 
-      // Guardar en AsyncStorage
-      await AsyncStorage.setItem(
-        "pagosHoy",
-        JSON.stringify({ fecha: hoy, pagos: pagosHoy })
-      );
-
-      setClientesQuePagaronHoy(new Set(pagosHoy));
+      const clientesUnicos = new Set(pagosHoy.map((pago) => pago.debtor_id));
+      setClientesQuePagaronHoy(clientesUnicos);
     } catch (error) {
       console.error("Error al obtener pagos del día", error);
     }
@@ -200,7 +183,7 @@ const VerClientesScreen = ({ navigation }) => {
                     : styles.filterText
                 }
               >
-                Semanal
+                Diario
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -218,7 +201,7 @@ const VerClientesScreen = ({ navigation }) => {
                     : styles.filterText
                 }
               >
-                Mensual
+                Semanal
               </Text>
             </TouchableOpacity>
             <TouchableOpacity

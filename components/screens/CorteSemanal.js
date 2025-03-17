@@ -51,9 +51,9 @@ const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
       const response = await api.post(
         `/cortes/semanal/preCorte/${preCorte.id}`,
         {
-          comision_cobro: comisionCobro, // Enviar en snake_case
-          comision_ventas: comisionVentas,
-          gastos: gastos,
+          comision_cobro: Number(comisionCobro),
+          comision_ventas: Number(comisionVentas),
+          gastos: Number(gastos),
         } // Enviar datos al backend
       );
 
@@ -212,7 +212,7 @@ const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Crear Pre-Corte Semanal</Text>
+            <Text style={styles.modalTitle}>Crear Corte Semanal</Text>
 
             {/* Campos para el pre-corte */}
             <TouchableOpacity
@@ -260,16 +260,16 @@ const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
             )}
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={handlePreCorteSemanal}
-              >
-                <Text style={styles.confirmButtonText}>Crear Pre-Corte</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => setModalVisible(false)}
               >
                 <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={handlePreCorteSemanal}
+              >
+                <Text style={styles.confirmButtonText}>Continuar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -286,50 +286,77 @@ const CorteSemanal = ({ usuarioId, ultimoCorteSemanal, onCorteRealizado }) => {
           onRequestClose={() => setPreCorte(null)}
         >
           <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Confirmar Corte Semanal</Text>
-
-              {/* Mostrar datos del pre-corte */}
-              <Text>
-                Cobranza Total: {formatearMonto(preCorte.cobranza_total)}
+            <View style={styles.confirmModalContent}>
+              <Text style={[styles.modalTitle, { color: "#3498db" }]}>
+                CONFIRMAR CORTE SEMANAL
               </Text>
-              <Text>Creditos Realizado: {preCorte.creditos_total}</Text>
 
-              {/* Campos para comisiones y gastos */}
-              <TextInput
-                placeholder="Comisión de Cobro"
-                style={styles.input}
-                keyboardType="numeric"
-                value={comisionCobro}
-                onChangeText={setComisionCobro}
-              />
-              <TextInput
-                placeholder="Comisión de Ventas"
-                style={styles.input}
-                keyboardType="numeric"
-                value={comisionVentas}
-                onChangeText={setComisionVentas}
-              />
-              <TextInput
-                placeholder="Gastos"
-                style={styles.input}
-                keyboardType="numeric"
-                value={gastos}
-                onChangeText={setGastos}
-              />
+              {/* Sección de Totales */}
+              <Text style={styles.sectionTitle}>Resumen</Text>
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Cobranza Total:</Text>
+                <Text style={styles.totalValue}>
+                  {formatearMonto(preCorte.cobranza_total)}
+                </Text>
+              </View>
 
-              <View style={styles.modalButtons}>
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Créditos:</Text>
+                <Text style={styles.totalValue}>
+                  {preCorte.creditos_total} (
+                  {formatearMonto(preCorte.creditos_total_monto)})
+                </Text>
+              </View>
+
+              {/* Sección de Comisiones y Gastos */}
+              <Text style={styles.sectionTitle}>Comisiones y Gastos</Text>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Comisión de Cobro (%)</Text>
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Ej: $1500"
+                  keyboardType="numeric"
+                  value={comisionCobro}
+                  onChangeText={setComisionCobro}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Comisión de Ventas (%)</Text>
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Ej: $2000"
+                  keyboardType="numeric"
+                  value={comisionVentas}
+                  onChangeText={setComisionVentas}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Gastos Varios</Text>
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Ej: %500"
+                  keyboardType="numeric"
+                  value={gastos}
+                  onChangeText={setGastos}
+                />
+              </View>
+
+              {/* Botones */}
+              <View style={[styles.modalButtons, { marginTop: 15 }]}>
                 <TouchableOpacity
-                  style={styles.confirmButton}
-                  onPress={handleConfirmarCorteSemanal} // Enviar comisiones y gastos aquí
-                >
-                  <Text style={styles.confirmButtonText}>Confirmar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.cancelButton}
+                  style={[styles.cancelButton, { backgroundColor: "#e74c3c" }]}
                   onPress={handleCancelarPreCorte}
                 >
                   <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.confirmButton, { backgroundColor: "#27ae60" }]}
+                  onPress={handleConfirmarCorteSemanal}
+                >
+                  <Text style={styles.confirmButtonText}>Confirmar</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -400,6 +427,83 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  confirmModalContent: {
+    width: "90%",
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 20,
+    maxHeight: "80%",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2c3e50",
+    marginVertical: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: "#3498db",
+    paddingBottom: 5,
+  },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 5,
+    paddingHorizontal: 10,
+  },
+  totalLabel: {
+    fontSize: 16,
+    color: "#7f8c8d",
+    fontWeight: "500",
+  },
+  totalValue: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2c3e50",
+  },
+  inputContainer: {
+    marginVertical: 8,
+    width: "100%",
+  },
+  inputLabel: {
+    color: "#010101",
+    fontSize: 14,
+    marginBottom: 5,
+    fontWeight: "500",
+  },
+  inputField: {
+    borderWidth: 1,
+    borderColor: "#bdc3c7",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: "#f8f9fa",
+  },
+  alertModal: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 15,
+    alignItems: "center",
+    width: "80%",
+  },
+  alertIcon: {
+    fontSize: 40,
+    marginBottom: 15,
+  },
+  alertTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  alertMessage: {
+    fontSize: 16,
+    textAlign: "center",
+    color: "#7f8c8d",
+  },
+  imprimirTexto: {
+    color: "#000",
+    fontWeight: "bold",
+    fontSize: 15,
+    alignSelf: "center",
   },
 });
 

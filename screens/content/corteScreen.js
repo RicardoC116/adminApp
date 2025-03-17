@@ -70,9 +70,29 @@ const CortesScreen = ({ route }) => {
         {data ? (
           <View style={styles.dataContainer}>
             {Object.entries(data).map(([key, value], index) => (
-              <View key={index} style={styles.card}>
-                <Text style={styles.cardTitle}>{key.replace(/_/g, " ")}</Text>
-                <Text style={styles.cardValue}>{value}</Text>
+              <View
+                key={index}
+                style={[
+                  styles.card,
+                  key === "Saldo Final" && styles.saldoFinalCard,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.cardTitle,
+                    key === "Saldo Final" && styles.saldoFinalTitle,
+                  ]}
+                >
+                  {key.replace(/_/g, " ")}
+                </Text>
+                <Text
+                  style={[
+                    styles.cardValue,
+                    key === "Saldo Final" && styles.saldoFInalValue,
+                  ]}
+                >
+                  {value}
+                </Text>
               </View>
             ))}
           </View>
@@ -244,6 +264,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 20,
+  },
+  saldoFinalCard: {
+    backgroundColor: "#AA60C8",
+  },
+  saldoFinalTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  saldoFInalValue: {
+    fontSize: 14,
+    color: "#fff",
   },
 });
 
