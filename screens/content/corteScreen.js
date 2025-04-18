@@ -117,7 +117,7 @@ const CortesScreen = ({ route }) => {
               "Cobranza Total": `${
                 formatearMonto(ultimoCorteDiario.cobranza_total) ?? 0
               }`,
-              "CLientes Cobrados": ultimoCorteDiario.deudores_cobrados ?? 0,
+              "Clientes Cobrados": ultimoCorteDiario.deudores_cobrados ?? 0,
               "Liquidaciones Totales": `${
                 formatearMonto(ultimoCorteDiario.liquidaciones_total) ?? 0
               }`,

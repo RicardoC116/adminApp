@@ -5,9 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  TouchableOpacity,
+  Linking,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import axios from "../../api/axios";
+import { formatearMonto } from "../global/dinero";
 
 const ClientesDetallados = ({ route }) => {
   const { deudor } = route.params;
@@ -49,12 +52,28 @@ const ClientesDetallados = ({ route }) => {
     </View>
   );
 
-  const renderDetailItem = (label, value) => (
-    <View style={styles.detailItem}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
-    </View>
-  );
+  const renderDetailItem = (label, value) => {
+    // Determinar si es un campo de teléfono
+    const isTelefono = label.includes("Teléfono");
+    const numeroRaw =
+      label === "Teléfono"
+        ? detalles.numero_telefono || "N/A"
+        : detalles.aval_phone || "N/A";
+
+    return (
+      <View style={styles.detailItem}>
+        <Text style={styles.detailLabel}>{label}</Text>
+
+        {isTelefono && numeroRaw !== "N/A" ? (
+          <TouchableOpacity onPress={() => Linking.openURL(`tel:${numeroRaw}`)}>
+            <Text style={[styles.detailValue, styles.phoneLink]}>{value}</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={styles.detailValue}>{value}</Text>
+        )}
+      </View>
+    );
+  };
 
   if (loading) {
     return (
@@ -91,19 +110,27 @@ const ClientesDetallados = ({ route }) => {
         "Detalles del Préstamo",
         "attach-money",
         <>
-          {renderDetailItem("Monto Otorgado", formatCurrency(detalles.amount))}
+          {renderDetailItem(
+            "Tipo de Pago",
+            detalles.payment_type === "diario"
+              ? "Semanal"
+              : detalles.payment_type === "semanal"
+              ? "Mensual"
+              : capitalizeFirstLetter(detalles.payment_type)
+          )}
+          {renderDetailItem("Monto Otorgado", formatearMonto(detalles.amount))}
           {renderDetailItem(
             "Total a Pagar",
-            formatCurrency(detalles.total_to_pay)
+            formatearMonto(detalles.total_to_pay)
           )}
-          {renderDetailItem("Balance Actual", formatCurrency(detalles.balance))}
+          {renderDetailItem("Balance Actual", formatearMonto(detalles.balance))}
           {renderDetailItem(
             "Pago Sugerido",
-            formatCurrency(detalles.suggested_payment)
+            formatearMonto(detalles.suggested_payment)
           )}
           {renderDetailItem(
             "Primer Pago",
-            formatCurrency(detalles.first_payment)
+            formatearMonto(detalles.first_payment)
           )}
         </>
       )}

@@ -196,7 +196,12 @@ const EditarCliente = ({ route, navigation }) => {
         </Text>
         <Text style={styles.text}>
           <Text style={styles.label}>Tipo de pago:</Text>{" "}
-          {capitalizeFirstLetter(tipoDePago)}
+          {/* {capitalizeFirstLetter(tipoDePago)} */}
+          {tipoDePago === "diario"
+            ? "Semanal"
+            : tipoDePago === "semanal"
+            ? "Mensual"
+            : capitalizeFirstLetter(tipoDePago)}
         </Text>
       </View>
 

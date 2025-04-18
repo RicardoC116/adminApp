@@ -53,14 +53,14 @@ export const RenovacionIcono = ({ focused, color, size }) => {
 
 export const DiaIcono = ({ focused, color, size }) => {
   return (
-    <FontAwesome name="square-o" size={size} color={color} />
+    <MaterialIcons name="square" size={size} color={color} />
     // <MaterialCommunityIcons name="calendar-outline" size={size} color={color} />
   );
 };
 
 // exportar icono de calendarWeek de fontAwasome5
 export const SemanaIcono = ({ focused, color, size }) => {
-  return <FontAwesome5 name="circle" size={size} color={color} />;
+  return <MaterialIcons name="circle" size={size} color={color} />;
 };
 
 export const PreCorteIcono = ({ focused, color, size }) => {

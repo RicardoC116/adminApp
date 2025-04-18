@@ -139,7 +139,13 @@ const DetallesDeudor = ({ route, navigation }) => {
       </TouchableOpacity>
       <View style={styles.balanceContainer}>
         <Text style={styles.detailText}>
-          Tipo de pago: {capitalizeFirstLetter(detalles.payment_type)}
+          {/* Tipo de pago: {capitalizeFirstLetter(detalles.payment_type)} */}
+          Tipo de pago:{" "}
+          {detalles.payment_type === "diario"
+            ? "Semanal"
+            : detalles.payment_type === "semanal"
+            ? "Mensual"
+            : capitalizeFirstLetter(detalles.payment_type)}
         </Text>
         <Text style={styles.detailText}>
           Total a pagar: {formatearMonto(detalles.total_to_pay)}

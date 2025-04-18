@@ -27,6 +27,7 @@ const DeudoresScreen = ({ route }) => {
   const [selectedFilter, setSelectedFilter] = useState(null);
   const navigation = useNavigation();
   const [clientesSemanaActual, setClientesSemanaActual] = useState([]);
+  const [clientesQuePagaronHoy, setClientesQuePagaronHoy] = useState(new Set());
 
   const fetchDeudores = async () => {
     try {
@@ -70,11 +71,36 @@ const DeudoresScreen = ({ route }) => {
     }
   };
 
+  // const obtenerPagosDelPeriodo = async () => {
+  //   try {
+  //     const collector_id = await AsyncStorage.getItem("collector_id");
+  //     const hoy = DateTime.now().setZone("America/Mexico_City").toISODate();
+
+  //     // obtenemos los pagos del dia (Clientes Diarios)
+  //     const responseDia = await axios.get(`/cobros/dia?fecha=${hoy}`);
+  //     const pagosHoy = responseDia.data.cobros;
+  //     const clientesUnicosDia = new Set(pagosHoy.map((pago) => pago.debtor_id));
+  //     setClientesQuePagaronHoy(clientesUnicosDia);
+
+  //     // obtenemos los pagos de la semana (Clientes Semanales)
+  //     const responseSemana = await axios.get(
+  //       `/cobros/juevesMiercoles?fecha=${hoy}`
+  //     );
+  //     const pagosSemana = responseSemana.data.cobros;
+  //     const clientesUnicosSemana = new Set(
+  //       pagosSemana.map((pago) => pago.debtor_id)
+  //     );
+  //     setClientesQuePagaronSemana(clientesUnicosSemana);
+  //   } catch (error) {
+  //     console.error("Error al obtener pagos del periodo", error);
+  //   }
+  // };
+
   const obtenerCobrosSemana = async () => {
     try {
       const hoy = DateTime.now().setZone("America/Mexico_City").toISODate();
       const response = await axios.get(
-        `/cobros/semanaId?fecha=${hoy}&collector_id=${usuario.id}`
+        `/cobros/lunesDomingoID?fecha=${hoy}&collector_id=${usuario.id}`
       );
 
       const cobrosSemana = response.data.cobros;
@@ -82,6 +108,7 @@ const DeudoresScreen = ({ route }) => {
       const clientesConInfo = cobrosSemana.map((pago) => {
         const deudor = deudores.find((d) => d.id === pago.debtor_id);
         return {
+          debtor_id: pago.debtor_id,
           contrato: deudor?.contract_number || "N/A",
           nombre: deudor?.name || "Cliente no encontrado",
           monto: pago.amount,
@@ -92,6 +119,26 @@ const DeudoresScreen = ({ route }) => {
       });
 
       setClientesSemanaActual(clientesConInfo);
+
+      // Diarios
+      const responseDia = await axios.get(
+        `/cobros/diaId?fecha=${hoy}&collector_id=${usuario.id}`
+      );
+      const pagosHoy = responseDia.data.cobros;
+      // const clientesConInfoDia = pagosHoy.map((pago) => {
+      //   const deudor = deudores.find((d) => d.id === pago.debtor_id);
+      //   return {
+      //     debtor_id: pago.debtor_id,
+      //     contrato: deudor?.contract_number || "N/A",
+      //     nombre: deudor?.name || "Cliente no encontrado",
+      //     monto: pago.amount,
+      //     fecha: DateTime.fromISO(pago.payment_date).toFormat(
+      //       "dd/MM/yyyy HH:mm"
+      //     ),
+      //   };
+      // });
+      const clientesUnicosDia = new Set(pagosHoy.map((pago) => pago.debtor_id));
+      setClientesQuePagaronHoy(clientesUnicosDia);
     } catch (error) {
       console.error("Error al obtener cobros semanales:", error);
     }
@@ -228,39 +275,60 @@ const DeudoresScreen = ({ route }) => {
 
   const deudoresActivos = deudores.filter((d) => Number(d.balance) > 0);
 
-  const renderDeudor = ({ item }) => (
-    <View
-      style={[
-        styles.containerList,
-        Number(item.balance) === 0 && styles.liquidadoBackground, //Liquidaciones
-        clientesSemanaActual.some((pago) => pago.debtor_id === item.id) &&
-          styles.pagadoHoyBackground, //Pagos de hoy
-        // clientesQuePagaronHoy.has(item.id) && styles.pagadoHoyBackground, //Pagos de hoy
-      ]}
-    >
-      <TouchableOpacity
-        style={styles.deudorItem}
-        onPress={() => navigation.navigate("DetallesDeudor", { deudor: item })}
+  const renderDeudor = ({ item }) => {
+    const esDiario = item.payment_type === "diario";
+    const esSemanal = item.payment_type === "semanal";
+
+    const pagoHoy = clientesQuePagaronHoy.has(item.id);
+    const pagosSemana = clientesSemanaActual.some(
+      (pago) => pago.debtor_id === item.id
+    );
+    return (
+      <View
+        style={[
+          styles.containerList,
+          Number(item.balance) === 0 && styles.liquidadoBackground, //Liquidaciones
+          // pagoHoy && styles.pagadoHoyBackground, //Pagos del día
+          // Chilac
+          // esDiario && pagoHoy && styles.pagadoHoyBackground, //Pagos del día
+          // esSemanal && pagosSemana && styles.pagadoSemanaBackground, //Pagos de la semanas
+          // San Jose
+          pagosSemana && styles.pagadoSemanaBackground, //Pagos de la semanas
+        ]}
       >
-        <View style={styles.iconContainer}>
-          {item.payment_type === "semanal" ? (
-            <SemanaIcono size={25} color={"#000000"} />
-          ) : (
-            <DiaIcono size={25} color={"#000000"} />
-          )}
-        </View>
-        <View style={styles.deudorInfo}>
-          <Text style={styles.deudorName}>{item.name}</Text>
-          <Text style={styles.deudorMonto}>
-            Total a pagar: {formatearMonto(item.total_to_pay)}
-          </Text>
-          <Text style={styles.deudorMonto}>
-            Balance: {formatearMonto(item.balance)}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
+        <TouchableOpacity
+          style={styles.deudorItem}
+          onPress={() =>
+            navigation.navigate("DetallesDeudor", { deudor: item })
+          }
+        >
+          <View style={styles.iconContainer}>
+            {/* {item.payment_type === "semanal" ? (
+              <SemanaIcono size={25} color={"#4f709C"} />
+            ) : (
+              <DiaIcono size={25} color={"#fada7a"} />
+            )} */}
+            {esSemanal && <SemanaIcono size={25} color={"#4f709C"} />}
+            {esDiario && <DiaIcono size={25} color={"#fada7a"} />}
+          </View>
+          <View style={styles.deudorInfo}>
+            <Text style={styles.deudorName}>{item.name}</Text>
+            <Text style={styles.deudorMonto}>
+              Total a pagar: {formatearMonto(item.total_to_pay)}
+            </Text>
+            <Text style={styles.deudorMonto}>
+              Balance: {formatearMonto(item.balance)}
+            </Text>
+            {/* {pagoHoy && (
+              <Text style={styles.badge}>
+                <Text style={styles.semanaBadge}>Pagado hoy</Text>
+              </Text>
+            )} */}
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -352,8 +420,15 @@ const styles = StyleSheet.create({
   liquidadoBackground: {
     backgroundColor: "#d4edda",
   },
+  pagadoSemanaBackground: {
+    backgroundColor: "#e3f2fd",
+    borderLeftWidth: 4,
+    borderLeftColor: "#2196f3",
+  },
   pagadoHoyBackground: {
-    backgroundColor: "#ffeb3b",
+    backgroundColor: "#fff3cd",
+    borderLeftWidth: 4,
+    borderLeftColor: "#ffc107",
   },
   text: {
     padding: 5,
@@ -395,6 +470,21 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  semanaBadge: {
+    margin: 15,
+    backgroundColor: "#2196f3",
+    color: "#fff",
+    padding: 5,
+    borderRadius: 4,
+    fontSize: 14,
+  },
+  badge: {
+    position: "relative",
+    // margin: "auto",
+    // bottom: 15,
+    // right: 15,
+    // top: 15,
   },
 });
 

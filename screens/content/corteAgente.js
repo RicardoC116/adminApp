@@ -2,10 +2,10 @@ import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import api from "../../api/axios";
+import { formatearMonto } from "../../components/global/dinero";
 import * as Print from "expo-print";
 
 import { ImprimirIcono } from "../../components/global/iconos";
-import { formatearMonto } from "../../components/global/dinero";
 
 const CorteAgenteScreen = ({ route }) => {
   const { usuario } = route.params;
@@ -62,157 +62,149 @@ const CorteAgenteScreen = ({ route }) => {
 
   const imprimirDetalles = () => {
     const contenido = `
-        <html>
-          <head>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                margin: 20px;
-                color: #333;
-              }
-              .contenedor {
-                display: flex;
-                flex-direction: column;
-                align-items: stretch;
-                justify-content: center;
-              
-              }
-              .encabezado {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 10px;
-                margin-top: 10px;
-              }
-              .tabla {
-                width: 100%;
-                border-collapse: collapse;
-                margin-bottom: 20px;
-                margin-top: 10px;
-
-              }
-              .tabla td {
-                border: 1px solid #ddd;
-                padding: 10px;
-                font-size: 14px;
-                vertical-align: top;
-              }
-              .tabla tr {
-                // border-bottom: 1px solid #000;
-              }
-              .nota {
-                margin: 20px 0;
-              }
-              .firmas {
-                display: flex;
-                justify-content: space-around;
-                margin-top: 40px;
-              }
-              .firma {
+      <html>
+        <head>
+          <style>
+            @page {
+              size: A4;
+              margin: 0;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              width: 210mm; /* Ancho A4 */
+              height: 297mm; /* Alto A4 */
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: start;
+              page-break-after: always;
+            }
+            .contenedor {
+              width: 190mm;
+              height: 140mm; /* Mitad del A4 */
+              padding: 10mm;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              page-break-inside: avoid;
+              border-bottom: 1px dashed #ccc; /* Línea de corte */
+            }
+            .encabezado {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 5mm;
+            }
+            .tabla {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 5mm 0;
+            }
+            .tabla td {
+              border: 1px solid #ddd;
+              padding: 3mm;
+              font-size: 14px;
+            }
+            .firmas {
+              display: flex;
+              justify-content: space-around;
+              margin-top: 10mm;
+            }
+            .firma {
                 text-align: center;
-              }
-              .firma span {
+             }
+
+            .firma span {
                 display: block;
                 margin-top: 10px;
                 font-size: 14px;
-              }
-              .linea-firma {
-                border-top: 1px solid #000;
-                margin-top: 30px;
-                width: 150px;
-                margin-left: auto;
-                margin-right: auto;
-              }
-              .corte-doble {
-                border-top: 1px dashed #000;
-                margin-top: 40px;
-                padding-top: 20px;
-              }
-              .fechas {
-                display: flex;
-                justify-content: center;
-                gap: 50px;
-                padding-block: 10px;
-              }
+             }
+            .linea-firma {
+              border-top: 1px solid #000;
+              width: 60mm;
+              margin: 0 auto;
+            }
+            .nota {
+              margin: 5mm 0;
+            }
           </style>
-          </head>
-          <body>
-   ${[1, 2]
-     .map(
-       () => `
+        </head>
+        <body>
+          ${[1, 2]
+            .map(
+              () => `
             <div class="contenedor">
               <div class="encabezado">
-                <span>
-                <strong>Nombre del agente: </strong> ${usuario.name}
-                </span>
-                <span><strong> ${new Date().toLocaleDateString()} </strong></span>
+                <span><strong>Agente:</strong> ${usuario.name}</span>
+                <span><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</span>
               </div>
+              
               <div class="fechas">
-              <span>
-              <strong>Fecha de inicio: </strong> 
-              ${new Date(corteAgente.fecha_inicio).toLocaleDateString()}
-              </span>
-              <span>
-              <strong>Fecha fin: </strong>
-              ${new Date(corteAgente.fecha_fin).toLocaleDateString()}
-              </span>
+                <span><strong>Inicio:</strong> ${new Date(
+                  corteAgente.fecha_inicio
+                ).toLocaleDateString()}</span>
+                <span><strong>Fin:</strong> ${new Date(
+                  corteAgente.fecha_fin
+                ).toLocaleDateString()}</span>
               </div>
+  
               <table class="tabla">
                 <tr>
-                  <td> <strong>Clientes Cobrados: </strong>${
-                    corteAgente?.deudores_cobrados ?? 0
-                  }</td>
-                  <td><strong>Comisión Cobros: </strong>$${
-                    corteAgente?.comision_cobro ?? 0
-                  }</td>
+                  <td>Cobrados</td>
+                  <td>${corteAgente?.deudores_cobrados ?? 0}</td>
                 </tr>
                 <tr>
-                  <td><strong>Clientes No Cobrados: </strong>${
-                    corteAgente?.corteAgente?.no_pagos_total ?? 0
-                  }</td>
-                  <td><strong>Comisión Ventas: </strong>${
-                    corteAgente?.comision_ventas ?? 0
-                  }</td>
+                  <td>No Cobrados</td>
+                  <td>${corteAgente?.no_pagos_total ?? 0}</td>
                 </tr>
                 <tr>
-                  <td><strong>Total Cobranza: </strong>$${
-                    corteAgente?.cobranza_total ?? 0
-                  }</td>
-                  <td><strong>Gastos: </strong>$${corteAgente?.gastos ?? 0}</td>
+                  <td>Total Cobranza</td>
+                  <td>${formatearMonto(corteAgente?.cobranza_total ?? 0)}</td>
                 </tr>
                 <tr>
-                  <td></td>
-                  <td><strong>Total Agente: </strong>$${
-                    corteAgente?.total_agente ?? 0
-                  }</td>
+                  <td>Comicion Venta</td>
+                  <td>${formatearMonto(
+                    Number(corteAgente?.comision_ventas) || 0
+                  )}</td>
+                </tr>
+                <tr>
+                  <td>Comision Cobros</td>
+                  <td>${formatearMonto(
+                    Number(corteAgente?.comision_cobro) || 0
+                  )}</td>
+                </tr>
+                <tr>
+                  <td>Gastos</td>
+                  <td>${formatearMonto(corteAgente?.gastos ?? 0)}</td>
+                </tr>
+                <tr>
+                  <td>Total Agente</td>
+                  <td>${formatearMonto(corteAgente?.total_agente ?? 0)}</td>
                 </tr>
               </table>
-              <br>
-              <div class="nota">
-                <strong>Nota:</strong> ____________________________________________
-              </div>
+  
               <div class="firmas">
                 <div class="firma">
                   <div class="linea-firma"></div>
-                  <span>Firma del Gerente</span>
+                  <span>Firma Gerente</span>
                 </div>
                 <div class="firma">
                   <div class="linea-firma"></div>
-                  <span>Firma del Agente</span>
+                  <span>Firma Agente</span>
                 </div>
               </div>
-
-              <br>
-              <br>
-              </div>
+            </div>
           `
-     )
-     .join("")}
-          </body>
-        </html>
-      `;
+            )
+            .join("")}
+        </body>
+      </html>
+    `;
 
     Print.printAsync({
       html: contenido,
+      orientation: "portrait",
+      paperSize: [210, 297], // Tamaño A4 en mm
     });
   };
 

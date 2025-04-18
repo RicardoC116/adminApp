@@ -20,6 +20,9 @@ const VerClientesScreen = ({ navigation }) => {
   const [filteredUsuarios, setFilteredUsuarios] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [clientesQuePagaronHoy, setClientesQuePagaronHoy] = useState(new Set());
+  const [clientesQuePagaronSemana, setClientesQuePagaronSemana] = useState(
+    new Set()
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -31,7 +34,8 @@ const VerClientesScreen = ({ navigation }) => {
           setClientes(clientesInvertidos);
           setFilteredUsuarios(clientesInvertidos);
 
-          await obtenerPagosDelDia();
+          await obtenerPagosDelPeriodo();
+          // await obtenerPagosDelDia();
         } catch (error) {
           console.error(error);
         } finally {
@@ -42,21 +46,85 @@ const VerClientesScreen = ({ navigation }) => {
     }, [])
   );
 
-  const obtenerPagosDelDia = async () => {
+  // Chilac
+  const obtenerPagosDelPeriodo = async () => {
     try {
-      // const hoy = new Date().toISOString().split("T")[0];
+      const collector_id = await AsyncStorage.getItem("collector_id");
       const hoy = DateTime.now().setZone("America/Mexico_City").toISODate();
 
-      const response = await axios.get(`/cobros/dia?fecha=${hoy}`);
+      // obtenemos los pagos del dia (Clientes Diarios)
+      const responseDia = await axios.get(`/cobros/dia?fecha=${hoy}`);
+      const pagosHoy = responseDia.data.cobros;
+      const clientesUnicosDia = new Set(pagosHoy.map((pago) => pago.debtor_id));
+      setClientesQuePagaronHoy(clientesUnicosDia);
 
-      const pagosHoy = response.data.cobros;
-
-      const clientesUnicos = new Set(pagosHoy.map((pago) => pago.debtor_id));
-      setClientesQuePagaronHoy(clientesUnicos);
+      // obtenemos los pagos de la semana (Clientes Semanales)
+      const responseSemana = await axios.get(
+        `/cobros/lunesDomingo?fecha=${hoy}`
+      );
+      const pagosSemana = responseSemana.data.cobros;
+      const clientesUnicosSemana = new Set(
+        pagosSemana.map((pago) => pago.debtor_id)
+      );
+      setClientesQuePagaronSemana(clientesUnicosSemana);
     } catch (error) {
-      console.error("Error al obtener pagos del día", error);
+      console.error("Error al obtener pagos del periodo", error);
     }
   };
+
+  // San jose
+  // const obtenerPagosDelPeriodo = async () => {
+  //   try {
+  //     const collector_id = await AsyncStorage.getItem("collector_id");
+
+  //     const hoy = DateTime.now().setZone("America/Mexico_City").toISODate();
+
+  //     // obtenemos los pagos del dia
+  //     const responseDia = await axios.get(`/cobros/dia?fecha=${hoy}`);
+  //     const pagosHoy = responseDia.data.cobros;
+  //     const clientesUnicosDia = new Set(pagosHoy.map((pago) => pago.debtor_id));
+  //     setClientesQuePagaronHoy(clientesUnicosDia);
+
+  //     // obtenemos los pagos de la semana
+  //     const responseSemana = await axios.get(
+  //       `/cobros/lunesDomingo?fecha=${hoy}`
+  //     );
+
+  //     const pagosSemana = responseSemana.data.cobros;
+  //     const clientesUnicosSemana = new Set(
+  //       pagosSemana.map((pago) => pago.debtor_id)
+  //     );
+  //     setClientesQuePagaronSemana(clientesUnicosSemana);
+  //   } catch (error) {
+  //     console.error("Error al obtener pagos del periodo", error);
+  //   }
+  // };
+
+  // Virsac
+  // const obtenerPagosDelPeriodo = async () => {
+  //   try {
+  //     const collector_id = await AsyncStorage.getItem("collector_id");
+  //     const hoy = DateTime.now().setZone("America/Mexico_City").toISODate();
+
+  //     // obtenemos los pagos del dia (Clientes Diarios)
+  //     const responseDia = await axios.get(`/cobros/dia?fecha=${hoy}`);
+  //     const pagosHoy = responseDia.data.cobros;
+  //     const clientesUnicosDia = new Set(pagosHoy.map((pago) => pago.debtor_id));
+  //     setClientesQuePagaronHoy(clientesUnicosDia);
+
+  //     // obtenemos los pagos de la semana (Clientes Semanales)
+  //     const responseSemana = await axios.get(
+  //       `/cobros/juevesMiercoles?fecha=${hoy}`
+  //     );
+  //     const pagosSemana = responseSemana.data.cobros;
+  //     const clientesUnicosSemana = new Set(
+  //       pagosSemana.map((pago) => pago.debtor_id)
+  //     );
+  //     setClientesQuePagaronSemana(clientesUnicosSemana);
+  //   } catch (error) {
+  //     console.error("Error al obtener pagos del periodo", error);
+  //   }
+  // };
 
   // Manejar la búsqueda
   const handleSearch = (text) => {
@@ -98,34 +166,68 @@ const VerClientesScreen = ({ navigation }) => {
     }
   };
 
-  const renderclientes = ({ item }) => (
-    <View
-      style={[
-        styles.containerList,
-        Number(item.balance) === 0 && styles.liquidadoBackground, //Liquidaciones
-        clientesQuePagaronHoy.has(item.id) && styles.pagadoHoyBackground, //Pagos de hoy
-      ]}
-    >
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() =>
-          navigation.navigate("DetallesClientes", { clienteId: item.id })
-        }
+  const renderclientes = ({ item }) => {
+    const esDiario = item.payment_type === "diario";
+    const esSemanal = item.payment_type === "semanal";
+    const pagosHoy = clientesQuePagaronHoy.has(item.id);
+    const pagosSemana = clientesQuePagaronSemana.has(item.id);
+
+    return (
+      <View
+        style={[
+          styles.containerList,
+          Number(item.balance) === 0 && styles.liquidadoBackground, //Liquidaciones
+          // Virsac y san jose
+          // clientesQuePagaronHoy.has(item.id) && styles.pagadoHoyBackground, //Pagos de hoy
+          // clientesQuePagaronSemana.has(item.id) &&
+          //   styles.pagadoSemanaBackground, //Pagos de la semana
+          // -------------------------
+          // Chilac
+          // esDiario && pagosHoy && styles.pagadoHoyBackground, // Pagos de hoy
+          // esSemanal && pagosSemana && styles.pagadoSemanaBackground, // Pagos de la semana
+          pagosSemana && styles.pagadoSemanaBackground, // Pagos de la semana
+        ]}
       >
-        {item.payment_type === "semanal" ? (
-          <SemanaIcono size={25} color={"#000000"} />
-        ) : (
-          <DiaIcono size={25} color={"#000000"} />
-        )}
-        <Text style={styles.buttonText}>{item.name}</Text>
-      </TouchableOpacity>
-    </View>
-  );
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() =>
+            navigation.navigate("DetallesClientes", { clienteId: item.id })
+          }
+        >
+          {/* San Jose y virsac */}
+          {/* {item.payment_type === "semanal" ? (
+            <SemanaIcono size={25} color={"#4f709C"} />
+          ) : (
+            <DiaIcono size={25} color={"#fada7a"} />
+          )} */}
+          {/* Chilac */}
+          {esSemanal ? (
+            <SemanaIcono size={25} color={"#4f709C"} />
+          ) : (
+            <DiaIcono size={25} color={"#fada7a"} />
+          )}
+
+          <Text style={styles.buttonText}>{item.name}</Text>
+          {/* Chilac */}
+          {/* {esSemanal && pagosSemana && (
+            <Text style={styles.semanaBadge}>Pagado</Text>
+          )}
+          {esDiario && pagosHoy && (
+            <Text style={styles.semanaBadge}>Pagado Hoy</Text>
+          )} */}
+          {/* San Jose y Virsac */}
+          {clientesQuePagaronSemana.has(item.id) && (
+            <Text style={styles.semanaBadge}>Pagado</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.loading}>Cargando detalles del deudor...</Text>
+        <Text style={styles.loading}>Cargando detalles del Cliente...</Text>
       </View>
     );
   }
@@ -183,7 +285,7 @@ const VerClientesScreen = ({ navigation }) => {
                     : styles.filterText
                 }
               >
-                Diario
+                Semanal
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -201,7 +303,7 @@ const VerClientesScreen = ({ navigation }) => {
                     : styles.filterText
                 }
               >
-                Semanal
+                Mensual
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -324,7 +426,30 @@ const styles = StyleSheet.create({
     backgroundColor: "#d4edda",
   },
   pagadoHoyBackground: {
-    backgroundColor: "#ffeb3b",
+    backgroundColor: "#fff3cd",
+    borderLeftWidth: 4,
+    borderLeftColor: "#ffc107",
+  },
+  pagadoSemanaBackground: {
+    backgroundColor: "#e3f2fd",
+    borderLeftWidth: 4,
+    borderLeftColor: "#2196f3",
+  },
+  diaBadge: {
+    margin: "auto",
+    backgroundColor: "#7f9f80",
+    color: "#333",
+    padding: 4,
+    borderRadius: 4,
+    fontSize: 14,
+  },
+  semanaBadge: {
+    margin: "auto",
+    backgroundColor: "#2196f3",
+    color: "#fff",
+    padding: 4,
+    borderRadius: 4,
+    fontSize: 14,
   },
 });
 

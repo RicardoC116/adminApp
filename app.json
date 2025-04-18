@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Admin-VC",
+    "name": "Admin-MS",
     "slug": "admin-app",
     "version": "3.0.0",
     "orientation": "portrait",
@@ -23,7 +23,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
+    },  
     "extra": {
       "eas": {
         "projectId": "efb07771-945d-4e23-b1f0-d145f7dbf9f4"

@@ -24,8 +24,8 @@ const AgregarDeudor = () => {
   const [tipo, setTipo] = useState(null);
   const [openTipo, setOpenTipo] = useState(false);
   const [itemsTipo, setItemsTipo] = useState([
-    { label: "Diario", value: "diario" },
-    { label: "Semanal", value: "semanal" },
+    { label: "Semanal", value: "diario" },
+    { label: "Mensual", value: "semanal" },
   ]);
   const [aval, setAval] = useState("");
   const [avalTelefono, setAvalTelefono] = useState("");
